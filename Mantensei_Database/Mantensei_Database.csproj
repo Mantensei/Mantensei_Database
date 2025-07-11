@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+	  <Nullable>enable</Nullable>
+	  <!-- Null 安全性は有効にしつつ -->
+	  <WarningsAsErrors></WarningsAsErrors>
+	  <!-- null関係だけエラー化されてないように確認 -->
+	  <NoWarn>CS8618</NoWarn>
+	  <!-- ★これが警告を抑制する行 -->
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="ViewModels\" />
+    <Folder Include="_XAML\Page\" />
+    <Folder Include="DataAccess\" />
+    <Folder Include="Resources\" />
+    <Folder Include="_XAML\Windows\" />
+  </ItemGroup>
+
+</Project>

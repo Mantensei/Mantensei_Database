@@ -1,0 +1,114 @@
+﻿<Page x:Class="Mantensei_Database.Pages.CharacterListPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      mc:Ignorable="d"
+      d:DesignHeight="600" d:DesignWidth="1100"
+      Title="CharacterListPage">
+
+    <Page.Resources>
+        <!-- 共通スタイル -->
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="GhostWhite"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="10,5"/>
+        </Style>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="5,0"/>
+        </Style>
+
+        <!-- DataGridスタイル -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="LightGray"/>
+            <Setter Property="RowBackground" Value="White"/>
+            <Setter Property="AlternatingRowBackground" Value="#F8F8F8"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="CanUserDeleteRows" Value="False"/>
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="SelectionMode" Value="Single"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+        </Style>
+
+        <!-- DataGridRowスタイル -->
+        <Style TargetType="DataGridRow">
+            <Setter Property="Height" Value="35"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E6F3FF"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#CCE5FF"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- DataGridCellスタイル -->
+        <Style TargetType="DataGridCell">
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="8,4"/>
+        </Style>
+    </Page.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 上部：検索・フィルタ -->
+        <Border Grid.Row="0" BorderBrush="LightBlue" BorderThickness="1" Padding="10" Margin="0,0,0,10">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBlock Text="検索:" Width="50"/>
+                    <TextBox Name="SearchTextBox" Width="200" Margin="0,0,10,0" TextChanged="SearchTextBox_TextChanged"/>
+                    <Button Content="🔍" Width="30" Click="SearchButton_Click"/>
+                    <Button Content="クリア" Width="60" Click="ClearButton_Click"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="フィルタ:" Width="50"/>
+                    <ComboBox Name="ClassFilterComboBox" Width="120" Margin="0,0,10,0" SelectionChanged="ClassFilterComboBox_SelectionChanged">
+                        <ComboBoxItem Content="すべて" IsSelected="True"/>
+                    </ComboBox>
+                    <TextBlock Text="部活:" Width="40"/>
+                    <ComboBox Name="ClubFilterComboBox" Width="120" Margin="0,0,10,0" SelectionChanged="ClubFilterComboBox_SelectionChanged">
+                        <ComboBoxItem Content="すべて" IsSelected="True"/>
+                    </ComboBox>
+                    <Button Content="フィルタリセット" Width="100" Click="ResetFilterButton_Click"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- 中央：キャラクター一覧 -->
+        <DataGrid Grid.Row="1" Name="CharacterDataGrid" 
+                  MouseDoubleClick="CharacterDataGrid_MouseDoubleClick"
+                  SelectionChanged="CharacterDataGrid_SelectionChanged">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/>
+                <DataGridTextColumn Header="名前" Binding="{Binding FullName}" Width="120"/>
+                <DataGridTextColumn Header="読み" Binding="{Binding Kana}" Width="120"/>
+                <DataGridTextColumn Header="クラス" Binding="{Binding Class}" Width="80"/>
+                <DataGridTextColumn Header="部活" Binding="{Binding Club}" Width="100"/>
+                <DataGridTextColumn Header="最終更新" Binding="{Binding LastModified, StringFormat=yyyy/MM/dd}" Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- 下部：操作ボタン -->
+        <Border Grid.Row="2" BorderBrush="LightBlue" BorderThickness="1" Padding="10" Margin="0,10,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock Name="StatusTextBlock" Text="0件のキャラクター" Margin="0,0,20,0"/>
+                <Button Content="新規作成" Width="80" Click="NewCharacterButton_Click"/>
+                <Button x:Name="EditCharacterButton" Content="編集" Width="60" Click="EditCharacterButton_Click" IsEnabled="False"/>
+                <Button x:Name="DeleteCharacterButton" Content="削除" Width="60" Click="DeleteCharacterButton_Click" IsEnabled="False"/>
+                <Button Content="更新" Width="60" Click="RefreshButton_Click"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>
