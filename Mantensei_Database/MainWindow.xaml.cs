@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Windows;
 using System.Windows.Controls;
+using System.Diagnostics;
 
 namespace Mantensei_Database
 {
@@ -48,6 +49,8 @@ namespace Mantensei_Database
 
             // 初期ページの設定
             NavigateToPage(NavigationPageType.Home);
+
+            Debug.WriteLine("-----------------------");
         }
 
         /// <summary>
