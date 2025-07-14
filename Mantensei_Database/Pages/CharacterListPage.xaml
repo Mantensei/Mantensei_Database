@@ -93,7 +93,7 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/>
                 <DataGridTextColumn Header="名前" Binding="{Binding FullName}" Width="120"/>
-                <DataGridTextColumn Header="読み" Binding="{Binding Kana}" Width="120"/>
+                <DataGridTextColumn Header="カナ" Binding="{Binding Kana}" Width="120"/>
                 <DataGridTextColumn Header="クラス" Binding="{Binding Class}" Width="80"/>
                 <DataGridTextColumn Header="部活" Binding="{Binding Club}" Width="100"/>
                 <DataGridTextColumn Header="最終更新" Binding="{Binding LastModified, StringFormat=yyyy/MM/dd}" Width="100"/>

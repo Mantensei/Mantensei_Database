@@ -1,4 +1,5 @@
 ﻿using Mantensei_Database.Models;
+using Mantensei_Database.DataAccess;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ using System.Windows.Media;
 using System.Windows;
 using MantenseiLib;
 using System.Diagnostics;
+using MantenseiLib.WPF;
 
 namespace Mantensei_Database.Models
 {
@@ -48,7 +50,9 @@ namespace Mantensei_Database.Models
         Complex     // 複雑なオブジェクト (List<DeesItem>)
     }
 
+
     // データ変換ロジッククラス
+    // 改良されたCharacterProfileConverter
     public static class CharacterProfileConverter
     {
         public static CharacterProfile LoadFromUI(DependencyObject root)
@@ -66,30 +70,107 @@ namespace Mantensei_Database.Models
                 var element = FindElementByKey(root, attr.Key, attr.Scope);
                 if (element == null) continue;
 
-                var value = ExtractValue(element);
-                if (value != null)
+                try
                 {
-                    try
+                    switch (attr.DataType)
                     {
-                        switch (pair.MemberInfo)
-                        {
-                            case PropertyInfo prop when prop.CanWrite:
-                                prop.SetValue(profile, Convert.ChangeType(value, prop.PropertyType));
-                                break;
-                            case FieldInfo field:
-                                field.SetValue(profile, Convert.ChangeType(value, field.FieldType));
-                                break;
-                        }
-
+                        case SaveTargetType.Single:
+                            SetSingleValue(element, pair, profile);
+                            break;
+                        case SaveTargetType.Multiple:
+                            SetMultipleValue(element, pair, profile);
+                            break;
+                        case SaveTargetType.Complex:
+                            SetComplexValue(element, pair, profile);
+                            break;
                     }
-                    catch 
-                    {
-                        Debug.WriteLine($"Failed to set value for {pair.MemberInfo.Name} with value {value}");
-                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Failed to set value for {pair.MemberInfo.Name}: {ex.Message}");
                 }
             }
         }
 
+        private static void SetSingleValue(DependencyObject element, AttributedMember<SaveTargetAttribute> pair, CharacterProfile profile)
+        {
+            var value = ExtractValue(element);
+            if (value == null) return;
+
+            switch (pair.MemberInfo)
+            {
+                case PropertyInfo prop when prop.CanWrite:
+                    prop.SetValue(profile, Convert.ChangeType(value, prop.PropertyType));
+                    break;
+                case FieldInfo field:
+                    field.SetValue(profile, Convert.ChangeType(value, field.FieldType));
+                    break;
+            }
+        }
+
+        private static void SetMultipleValue(DependencyObject element, AttributedMember<SaveTargetAttribute> pair, CharacterProfile profile)
+        {
+            Debug.WriteLine($"");
+            Debug.WriteLine($"Setting multiple value for \"{pair.MemberInfo.Name}\"");
+
+            var stringList = ExtractStringList(element);
+
+            if (stringList == null) return;
+
+            switch (pair.MemberInfo)
+            {
+                case PropertyInfo prop when prop.CanWrite && prop.PropertyType == typeof(List<string>):
+                    prop.SetValue(profile, stringList);
+                    break;
+                case FieldInfo field when field.FieldType == typeof(List<string>):
+                    field.SetValue(profile, stringList);
+                    break;
+            }
+        }
+
+        private static void SetComplexValue(DependencyObject element, AttributedMember<SaveTargetAttribute> pair, CharacterProfile profile)
+        {
+            switch(pair.MemberInfo.Name)
+            {
+                case "Dees":
+                    var stringList = ExtractStringList(element);
+                    var deesList = stringList.Select(s => new DeesItem { Text = s, Used = false }).ToList();
+
+                    switch (pair.MemberInfo)
+                    {
+                        case PropertyInfo prop when prop.CanWrite:
+                            prop.SetValue(profile, deesList);
+                            break;
+                        case FieldInfo field:
+                            field.SetValue(profile, deesList);
+                            break;
+                    }
+                    break;
+
+                default:
+                    Debug.WriteLine($"Setting complex value for unknown type: {pair.MemberInfo.Name}");
+                    break;
+            }
+        }
+
+        // 複数データを抽出する新しいメソッド
+        private static List<string> ExtractStringList(DependencyObject element)
+        {
+            switch (element)
+            {
+                case ISaveDataProvider saveDataProvider:
+                    return saveDataProvider.GetSaveItems().ToList();
+            }
+
+            return
+            element.GetComponentsInChildren<DependencyObject>()
+                        .Select(child => ExtractValue(child)?.ToString())
+                        .Where(s => !string.IsNullOrEmpty(s))
+                        .OfType<string>()
+                        .ToList();
+        }
+
+        // LoadToUIメソッドも同様に更新
         public static void LoadToUI(DependencyObject root, CharacterProfile profile)
         {
             foreach (var pair in AttributeUtility.GetAttributedFields<SaveTargetAttribute>(profile))
@@ -97,35 +178,58 @@ namespace Mantensei_Database.Models
                 var attr = pair.Attribute;
                 var element = FindElementByKey(root, attr.Key, attr.Scope);
                 if (element == null) continue;
+
                 var value = pair.GetValue(profile);
-                ApplyValue(element, value);
+
+                switch (attr.DataType)
+                {
+                    case SaveTargetType.Single:
+                        ApplyValue(element, value);
+                        break;
+                    case SaveTargetType.Multiple:
+                        ApplyStringList(element, value as List<string>);
+                        break;
+                    case SaveTargetType.Complex:
+                        ApplyComplexValue(element, value);
+                        break;
+                }
             }
         }
 
-        private static DependencyObject? FindElementByKey(DependencyObject root, string key, SaveTargetScope scope)
+        private static void ApplyStringList(DependencyObject element, List<string> values)
         {
-            // 自分自身をチェック
-            if (root is FrameworkElement fe && (fe.Tag?.ToString() == key || fe.Name == key))
-                return root;
+            if (values?.Count == 0) return;
 
-            // 子要素を再帰的に検索
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+            switch (element)
             {
-                var child = VisualTreeHelper.GetChild(root, i);
-                var found = FindElementByKey(child, key, scope);  // scopeを維持
-                if (found != null) return found;
-            }
+                case ISaveDataProvider saveDataProvider:
+                    saveDataProvider.LoadItem(values);
+                    break;
 
-            return null;
+                default:
+                    Debug.WriteLine($"Unsupported element type for string list: {element.GetType().Name}");
+                    break;
+            }
         }
 
+        private static void ApplyComplexValue(DependencyObject element, object value)
+        {
+            // DeesItemの場合
+            if (value is List<DeesItem> deesList)
+            {
+                var stringList = deesList.Select(d => d.Text).ToList();
+                ApplyStringList(element, stringList);
+            }
+        }
+
+        // 既存のメソッドは変更なし
         private static object? ExtractValue(DependencyObject element) => element switch
         {
             TextBox tb => tb.Text,
             ComboBox cb => cb.SelectedItem,
             CheckBox chk => chk.IsChecked ?? false,
             Slider slider => slider.Value,
-            StackPanel sp => sp.Children.OfType<DependencyObject>().Select(x => ExtractValue(x)).ToList(),
+            TextBlock textBlock => textBlock.Text,
             _ => null
         };
 
@@ -137,10 +241,8 @@ namespace Mantensei_Database.Models
                     tb.Text = value?.ToString() ?? string.Empty;
                     break;
                 case ComboBox cb:
-                    // ComboBoxの場合、SelectedItemの設定方法を改善
                     if (value != null)
                     {
-                        // 文字列の場合はTextで設定
                         if (value is string stringValue)
                         {
                             cb.Text = stringValue;
@@ -160,10 +262,22 @@ namespace Mantensei_Database.Models
                 case Slider slider when value is int i:
                     slider.Value = i;
                     break;
-                default:
-                    System.Diagnostics.Debug.WriteLine($"未対応の要素タイプ: {element.GetType().Name}");
-                    break;
             }
+        }
+
+        private static DependencyObject? FindElementByKey(DependencyObject root, string key, SaveTargetScope scope)
+        {
+            if (root is FrameworkElement fe && (fe.Tag?.ToString() == key || fe.Name == key))
+                return root;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+            {
+                var child = VisualTreeHelper.GetChild(root, i);
+                var found = FindElementByKey(child, key, scope);
+                if (found != null) return found;
+            }
+
+            return null;
         }
     }
 }

@@ -124,7 +124,7 @@ namespace Mantensei_Database.Pages
                 var searchTargets = new[]
                 {
                     character.FullName,
-                    character.Kana,
+                    character.FullKana,
                     character.Class,
                     character.Club
                 };
@@ -343,10 +343,9 @@ namespace Mantensei_Database.Models
     {
         public int Id { get; set; }
         public string FullName { get; set; }
-        public string Kana { get; set; }
+        public string FullKana { get; set; }
         public string Class { get; set; }
         public string Club { get; set; }
-        public CharacterStatus Status { get; set; }
         public DateTime LastModified { get; set; }
         public string FilePath { get; set; }
 
@@ -354,10 +353,9 @@ namespace Mantensei_Database.Models
         {
             Id = profile.Id;
             FullName = profile.FullName ?? "";
-            Kana = profile.Kana ?? "";
+            FullKana = profile.Kana ?? "";
             Class = profile.Class ?? "";
             Club = profile.Club ?? "";
-            Status = profile.Status;
             LastModified = File.GetLastWriteTime(filePath);
             FilePath = filePath;
         }

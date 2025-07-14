@@ -14,10 +14,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Resources\" />
     <Folder Include="ViewModels\" />
     <Folder Include="_XAML\Page\" />
-    <Folder Include="DataAccess\" />
-    <Folder Include="Resources\" />
     <Folder Include="_XAML\Windows\" />
   </ItemGroup>
 

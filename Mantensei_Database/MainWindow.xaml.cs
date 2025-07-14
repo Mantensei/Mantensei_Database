@@ -35,6 +35,7 @@ namespace Mantensei_Database
         public MainWindow()
         {
             InitializeComponent();
+            WarmUpJIT();
 
             // シングルトンチェック
             if (_instance != null && _instance.IsLoaded)
@@ -49,6 +50,8 @@ namespace Mantensei_Database
 
             // 初期ページの設定
             NavigateToPage(NavigationPageType.Home);
+
+            new Mantensei_Database.Windows.SchoolEditorWindow().Show();
         }
 
         /// <summary>
@@ -126,6 +129,14 @@ namespace Mantensei_Database
                     SettingsButton.Style = activeStyle;
                     break;
             }
+        }
+
+        // JITを温めておく
+        void WarmUpJIT()
+        {
+            _ = DateTime.TryParse("2000/1/1", out _);
+            _ = new Random().Next();
+            _ = typeof(List<int>).GetHashCode();
         }
 
 

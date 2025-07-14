@@ -7,14 +7,32 @@ using Mantensei_Database.Controls;
 using Mantensei_Database.ViewModels;
 
 using System.Windows.Controls;
+using System.Windows;
+using MantenseiLib.WPF;
+using Mantensei_Database.DataAccess;
 
 namespace Mantensei_Database.Controls
 {
-    public partial class TagInputView : UserControl
+    public partial class TagInputView : UserControl, ISaveDataProvider
     {
         public TagInputView()
         {
             InitializeComponent();
+        }
+
+        TagInputViewModel ViewModel => (TagInputViewModel)DataContext;
+        public void AddItem(string item) => ViewModel?.AddItem(item);
+        public void AddItem(IEnumerable<string> items) => ViewModel?.AddItem(items);
+        public ObservableCollection<string> Items => ViewModel.Items;
+
+        public IEnumerable<string> GetSaveItems()
+        {
+            return Items;
+        }
+
+        public void LoadItem(IEnumerable<string> items)
+        {
+            ViewModel.AddItem(items);
         }
     }
 }
@@ -45,20 +63,6 @@ namespace Mantensei_Database.Controls
 
         public ICommand AddCommand { get; }
 
-        public TagInputViewModel()
-        {
-            Title = "プレビュー用タイトル";
-            TagId = "preview";
-
-            // 仮タグをいくつか入れておく
-            Items.Add("仮タグ1");
-            Items.Add("仮タグ2");
-            Items.Add("仮タグ3");
-
-            // コマンドはnullでよい（ボタン押せなくていい）
-            AddCommand = null!;
-        }
-
         public TagInputViewModel(string title, string tagId)
         {
             Title = title;
@@ -66,13 +70,26 @@ namespace Mantensei_Database.Controls
             AddCommand = new RelayCommand(AddItem);
         }
 
-        private void AddItem()
+        public void AddItem(string item)
         {
-            if (!string.IsNullOrWhiteSpace(InputText))
+            if (!string.IsNullOrWhiteSpace(item))
             {
-                Items.Add(InputText.Trim());
+                Items.Add(item.Trim());
                 InputText = string.Empty;
             }
+        }
+
+        public void AddItem(IEnumerable<string> items)
+        {
+            foreach (var item in items)
+            {
+                AddItem(item);
+            }
+        }
+
+        private void AddItem()
+        {
+            AddItem(InputText);
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

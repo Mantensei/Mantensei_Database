@@ -103,7 +103,8 @@
             <ColumnDefinition Width="10*"/>
         </Grid.ColumnDefinitions>
 
-        <TextBox Width="0" Height="0" FontSize="0.01" Tag="id" IsTabStop="False"/>
+        <!-- メタデータ埋め込み用フィールド -->
+        <TextBox Width="0" Height="0" FontSize="0.01" Tag="ID" IsTabStop="False" Visibility="Collapsed" Focusable="False" IsReadOnly="True"/>
 
         <!-- 左パネル：基本情報 -->
         <StackPanel Grid.Column="0" Margin="10">
@@ -125,21 +126,21 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <TextBox Grid.Row="0" Grid.Column="0" FontSize="10" Name="SeiKana" Tag="seiKana"/>
-                            <TextBox Grid.Row="0" Grid.Column="1" FontSize="10" Name="MeiKana" Tag="meiKana"/>
+                            <TextBox Grid.Row="0" Grid.Column="0" FontSize="10" Name="SeiKana" Tag="セイ"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" FontSize="10" Name="MeiKana" Tag="メイ"/>
 
-                            <TextBox Grid.Row="1" Grid.Column="0" FontSize="14" Height="30" Name="Sei" Tag="sei"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" FontSize="14" Height="30" Name="Mei" Tag="mei"/>
+                            <TextBox Grid.Row="1" Grid.Column="0" FontSize="14" Height="30" Name="Sei" Tag="姓"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" FontSize="14" Height="30" Name="Mei" Tag="名"/>
                         </Grid>
 
                         <Border Margin="0 5">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                 <TextBlock Text="誕生日"/>
-                                <TextBox Width="50"/>
+                                <TextBox x:Name="BirthMonth" Width="50" Tag="誕生日"/>
                                 <TextBlock Text="月"/>
-                                <TextBox Width="50"/>
+                                <TextBox x:Name="BirthDay" Width="50" Tag="誕生月"/>
                                 <TextBlock Text="日"/>
-                                <Button Content="🎲" Width="25" IsTabStop="True"/>
+                                <Button x:Name="GodDice" Content="🎲" Width="25" IsTabStop="True" Click="GodDice_Click"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -156,10 +157,12 @@
                     <Border Padding="0 5">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                                <TextBlock Text="小学校" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="150"/>
+                                <TextBlock Text="高校" Width="50" TextAlignment="Center"/>
+                                <ComboBox Width="75"/>
                                 <TextBlock Text="中学校" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="150"/>
+                                <ComboBox Width="75"/>
+                                <TextBlock Text="小学校" Width="50" TextAlignment="Center"/>
+                                <ComboBox Width="75"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -167,17 +170,17 @@
                         <StackPanel Orientation="Vertical">
                             <StackPanel Orientation="Horizontal" Margin="0 5">
                                 <TextBlock Text="クラス" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="150" Tag="class"/>
+                                <ComboBox Width="125" Tag="クラス"/>
                                 <TextBlock Text="部活動" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="150" Tag="club"/>
+                                <ComboBox Width="125" Tag="部活"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0 5">
                                 <TextBlock Text="1年" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75" Margin="0,0,10,0"/>
+                                <ComboBox Width="75"/>
                                 <TextBlock Text="2年" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75" Margin="0,0,10,0"/>
+                                <ComboBox Width="75"/>
                                 <TextBlock Text="3年" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75" Margin="0,0,10,0"/>
+                                <ComboBox Width="75"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -218,31 +221,31 @@
                             <Border Padding="0" BorderThickness="0.5">
                                 <StackPanel Style="{StaticResource SliderPanel}">
                                     <TextBlock Text="フィジカル💪" Width="75" Foreground="#C02020" FontWeight="SemiBold"/>
-                                    <Slider Style="{StaticResource StatusSlider}" Tag="physical"/>
+                                    <Slider Style="{StaticResource StatusSlider}" Tag="フィジカル"/>
                                 </StackPanel>
                             </Border>
                             <Border Padding="0" BorderThickness="0.5">
                                 <StackPanel Style="{StaticResource SliderPanel}">
                                     <TextBlock Text="知力📘" Width="75" Foreground="#202080" FontWeight="SemiBold"/>
-                                    <Slider Style="{StaticResource StatusSlider}" Tag="intelligence"/>
+                                    <Slider Style="{StaticResource StatusSlider}" Tag="知力"/>
                                 </StackPanel>
                             </Border>
                             <Border Padding="0" BorderThickness="0.5">
                                 <StackPanel Style="{StaticResource SliderPanel}">
                                     <TextBlock Text="メンタル💖" Width="75" Foreground="#f080f0" FontWeight="SemiBold"/>
-                                    <Slider Style="{StaticResource StatusSlider}" Tag="mental"/>
+                                    <Slider Style="{StaticResource StatusSlider}" Tag="メンタル"/>
                                 </StackPanel>
                             </Border>
                             <Border Padding="0" BorderThickness="0.5">
                                 <StackPanel Style="{StaticResource SliderPanel}">
                                     <TextBlock Text="カリスマ🌟" Width="75" Foreground="#E0A000" FontWeight="SemiBold"/>
-                                    <Slider Style="{StaticResource StatusSlider}" Tag="charisma"/>
+                                    <Slider Style="{StaticResource StatusSlider}" Tag="カリスマ"/>
                                 </StackPanel>
                             </Border>
                             <Border Padding="0" BorderThickness="0.5">
                                 <StackPanel Style="{StaticResource SliderPanel}">
                                     <TextBlock Text="運🍀" Width="75" Foreground="#208020" FontWeight="SemiBold"/>
-                                    <Slider Style="{StaticResource StatusSlider}" Tag="luck"/>
+                                    <Slider Style="{StaticResource StatusSlider}" Tag="運"/>
                                 </StackPanel>
                             </Border>
                         </WrapPanel>
@@ -263,11 +266,11 @@
                     <!-- 紹介文 -->
                     <StackPanel Margin="0 5">
                         <TextBlock Text="紹介文" Style="{StaticResource HeaderLabel}" />
-                        <TextBox Height="100"
+                        <TextBox Height="150"
                          TextWrapping="Wrap"
                          AcceptsReturn="True"
                          Style="{StaticResource ParagraphTextBox}"
-                         Tag="description" />
+                         Tag="説明" />
                     </StackPanel>
 
                     <controls:TagInputView DataContext="{Binding Traits}"/>
@@ -279,7 +282,7 @@
                          TextWrapping="Wrap"
                          AcceptsReturn="True"
                          Style="{StaticResource ParagraphTextBox}"
-                         Tag="speechStyle" />
+                         Tag="話し方" />
                     </StackPanel>
 
                     <!-- 補足 -->
@@ -289,7 +292,7 @@
                          TextWrapping="Wrap"
                          AcceptsReturn="True"
                          Style="{StaticResource ParagraphTextBox}"
-                         Tag="notesSupplement" />
+                         Tag="備考" />
                     </StackPanel>
 
                     <controls:TagInputView DataContext="{Binding Dees}"/>

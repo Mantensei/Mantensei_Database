@@ -14,68 +14,73 @@ namespace Mantensei_Database.Models
 {
     public partial class CharacterProfile
     {
-        [SaveTarget("id")]
+        [SaveTarget("ID")]
         public int Id { get; set; }
 
-        [SaveTarget("seiKana")]
+        [SaveTarget("セイ")]
         public string SeiKana { get; set; }
 
-        [SaveTarget("meiKana")]
+        [SaveTarget("メイ")]
         public string MeiKana { get; set; }
 
-        public string Kana => $"{SeiKana}{MeiKana}";
+        public string Kana => $"{SeiKana}_{MeiKana}";
 
-        [SaveTarget("sei")]
+        [SaveTarget("姓")]
         public string Sei { get; set; }
 
-        [SaveTarget("mei")]
+        [SaveTarget("名")]
         public string Mei { get; set; }
+        public string FullName => $"{Sei}　{Mei}";
 
-        public string FullName => $"{Sei}{Mei}";
+        [SaveTarget("誕生日")]
+        public string BirthDay { get; set; }
 
-        [SaveTarget("nicknames", SaveTargetType.Multiple)]
+        [SaveTarget("誕生月")]
+        public string BirthMonth { get; set; }
+
+        [SaveTarget("あだ名", SaveTargetType.Multiple)]
         public List<string> Nicknames { get; set; } = new();
 
-        [SaveTarget("class")]
+        [SaveTarget("クラス")]
         public string Class { get; set; }
 
-        [SaveTarget("club")]
+        [SaveTarget("部活")]
         public string Club { get; set; }
 
-        [SaveTarget("favoriteThings", SaveTargetType.Multiple)]
+        [SaveTarget("趣味", SaveTargetType.Multiple)]
         public List<string> FavoriteThings { get; set; } = new();
 
-        [SaveTarget("speechStyle")]
+        [SaveTarget("話し方")]
         public string SpeechStyle { get; set; }
 
-        [SaveTarget("description")]
+        [SaveTarget("説明")]
         public string Description { get; set; }
 
-        [SaveTarget("notesSupplement")]
+        [SaveTarget("備考")]
         public string NotesSupplement { get; set; }
 
-        [SaveTarget("intelligence")]
+        [SaveTarget("知力")]
         public int Intelligence { get; set; }
 
-        [SaveTarget("physical")]
+        [SaveTarget("フィジカル")]
         public int Physical { get; set; }
 
-        [SaveTarget("mental")]
+        [SaveTarget("メンタル")]
         public int Mental { get; set; }
 
-        [SaveTarget("luck")]
+        [SaveTarget("運")]
         public int Luck { get; set; }
 
-        [SaveTarget("charisma")]
+        [SaveTarget("カリスマ")]
         public int Charisma { get; set; }
 
         public CharacterStatus Status =>
             new CharacterStatus(Intelligence, Physical, Mental, Luck, Charisma);
 
-        [SaveTarget("traits", SaveTargetType.Multiple)]
+        [SaveTarget("タグ", SaveTargetType.Multiple)]
         public List<string> Traits { get; set; } = new();
 
-        [SaveTarget("dees", SaveTargetType.Complex)]
+        [SaveTarget("ネタ", SaveTargetType.Complex)]
         public List<DeesItem> Dees { get; set; } = new();
     }
 

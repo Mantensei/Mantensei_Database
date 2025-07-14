@@ -6,9 +6,8 @@
              xmlns:vm="clr-namespace:Mantensei_Database.ViewModels"
              xmlns:controls="clr-namespace:Mantensei_Database.Controls"
              mc:Ignorable="d"
-             d:DataContext="{d:DesignInstance Type=controls:TagInputViewModel, IsDesignTimeCreatable=False}">
-
-
+             d:DataContext="{d:DesignInstance Type=controls:TagInputViewModel, IsDesignTimeCreatable=False}"
+             Tag="{Binding TagId}">
 
     <UserControl.Resources>
         <Style x:Key="TagLabel" TargetType="TextBlock">
@@ -40,7 +39,8 @@
         </StackPanel>
         <Border Style="{StaticResource ScrollPanel}" Margin="0 5">
             <ScrollViewer Height="50" VerticalScrollBarVisibility="Auto">
-                <WrapPanel Orientation="Horizontal" Tag="{Binding TagId}">
+                <WrapPanel Orientation="Horizontal">
+                <!--<WrapPanel Orientation="Horizontal" Tag="{Binding TagId}">-->
                     <ItemsControl ItemsSource="{Binding Items}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
