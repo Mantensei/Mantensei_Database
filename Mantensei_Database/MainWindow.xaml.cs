@@ -49,8 +49,6 @@ namespace Mantensei_Database
 
             // 初期ページの設定
             NavigateToPage(NavigationPageType.Home);
-
-            Debug.WriteLine("-----------------------");
         }
 
         /// <summary>

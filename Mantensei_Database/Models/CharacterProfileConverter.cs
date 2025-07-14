@@ -23,12 +23,29 @@ namespace Mantensei_Database.Models
     {
         public string Key { get; }
         public SaveTargetScope Scope { get; set; } = SaveTargetScope.Self;
+        public SaveTargetType DataType { get; set; } = SaveTargetType.Single;
+
         public SaveTargetAttribute(string key) => Key = key;
-        public SaveTargetAttribute(string key, SaveTargetScope scope)
+
+        public SaveTargetAttribute(string key, SaveTargetType dataType)
+        {
+            Key = key;
+            DataType = dataType;
+        }
+
+        public SaveTargetAttribute(string key, SaveTargetScope scope, SaveTargetType dataType)
         {
             Key = key;
             Scope = scope;
+            DataType = dataType;
         }
+    }
+
+    public enum SaveTargetType
+    {
+        Single,     // 単一データ (string, int, etc.)
+        Multiple,   // 複数データ (List<string>)
+        Complex     // 複雑なオブジェクト (List<DeesItem>)
     }
 
     // データ変換ロジッククラス

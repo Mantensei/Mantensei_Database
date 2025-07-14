@@ -33,7 +33,7 @@ namespace Mantensei_Database.Models
 
         public string FullName => $"{Sei}{Mei}";
 
-        [SaveTarget("nicknames")]
+        [SaveTarget("nicknames", SaveTargetType.Multiple)]
         public List<string> Nicknames { get; set; } = new();
 
         [SaveTarget("class")]
@@ -42,7 +42,7 @@ namespace Mantensei_Database.Models
         [SaveTarget("club")]
         public string Club { get; set; }
 
-        [SaveTarget("favoriteThings")]
+        [SaveTarget("favoriteThings", SaveTargetType.Multiple)]
         public List<string> FavoriteThings { get; set; } = new();
 
         [SaveTarget("speechStyle")]
@@ -72,12 +72,15 @@ namespace Mantensei_Database.Models
         public CharacterStatus Status =>
             new CharacterStatus(Intelligence, Physical, Mental, Luck, Charisma);
 
-        [SaveTarget("traits")]
+        [SaveTarget("traits", SaveTargetType.Multiple)]
         public List<string> Traits { get; set; } = new();
 
-        [SaveTarget("dees")]
+        [SaveTarget("dees", SaveTargetType.Complex)]
         public List<DeesItem> Dees { get; set; } = new();
+    }
 
+    public partial class CharacterProfile
+    {
         /// <summary>
         /// デバッグ用ログ出力
         /// </summary>
