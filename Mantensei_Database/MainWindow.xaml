@@ -78,24 +78,9 @@
                 BorderBrush="#E0E0E0" 
                 BorderThickness="0,1,0,0"
                 Padding="10">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <Button x:Name="HomeButton" 
-                        Content="🏠 ホーム" 
-                        Style="{StaticResource ActiveNavButton}"
-                        Click="HomeButton_Click"/>
-                <Button x:Name="CharacterListButton" 
-                        Content="👥 一覧" 
-                        Style="{StaticResource NavButton}"
-                        Click="CharacterListButton_Click"/>
-                <Button x:Name="StatisticsButton" 
-                        Content="📊 統計" 
-                        Style="{StaticResource NavButton}"
-                        Click="StatisticsButton_Click"/>
-                <Button x:Name="SettingsButton" 
-                        Content="⚙️ 設定" 
-                        Style="{StaticResource NavButton}"
-                        Click="SettingsButton_Click"/>
-            </StackPanel>
+            <StackPanel x:Name="NavigationPanel" 
+                        Orientation="Horizontal" 
+                        HorizontalAlignment="Center"/>
         </Border>
     </Grid>
 </Window>
