@@ -6,43 +6,26 @@
         public int Id { get; set; }
 
         [SaveTarget("学校タイプ")]
-        public SchoolType SchoolType { get; set; }
+        public string SchoolType { get; set; }
 
         [SaveTarget("学校名")]
         public string Name { get; set; }
 
-        [SaveTarget("クラス")]
-        public List<string> Classes { get; set; }
+        [SaveTarget("クラス", SaveTargetType.Multiple)]
+        public List<string> Classes { get; set; } = new();
 
-        [SaveTarget("部活")]
-        public List<string> Clubs { get; set; }
+        [SaveTarget("部活", SaveTargetType.Multiple)]
+        public List<string> Clubs { get; set; } = new();
 
         [SaveTarget("説明")]
         public string Description { get; set; }
 
         [SaveTarget("備考")]
         public string NotesSupplement { get; set; }
-    }
 
-    public enum SchoolType
-    {
-        Elementary,
-        Middle,
-        High,
-        Other
-    }
-
-    public static class SchoolTypeExtension
-    {
-        public static int GetRankCount(this SchoolType type)
+        public static readonly string[] SchoolTypes = new string[]
         {
-            return type switch
-            {
-                SchoolType.Elementary => 6,
-                SchoolType.Middle => 3,
-                SchoolType.High => 3,
-                _ => 0,
-            };
-        }
+            "小学校", "中学校", "高等学校", "大学", "専門学校", "その他",
+        };
     }
 }

@@ -28,6 +28,7 @@ namespace Mantensei_Database.Windows
             InitializeComponent();
             DataContext = new SEW_Model();
             _profile = profile;
+
             Loaded += (s, e) => InitializeProfile();
         }
 
@@ -36,6 +37,12 @@ namespace Mantensei_Database.Windows
         /// </summary>
         private void InitializeProfile()
         {
+            SchoolTypeCombo.Items.Clear();
+            foreach(var type in SchoolProfile.SchoolTypes)
+            {
+                SchoolTypeCombo.Items.Add(type);
+            }
+
             if (_profile == null)
             {
                 _profile = new SchoolProfile();
@@ -49,11 +56,6 @@ namespace Mantensei_Database.Windows
             }
 
             ProfileConverter.LoadToUI(this, _profile);
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            Save();
         }
 
         void Save()
@@ -93,20 +95,12 @@ namespace Mantensei_Database.Windows
         }
 
         /// <summary>
-        /// 新しいIDを生成
-        /// </summary>
-        private int GenerateNewId()
-        {
-            // 実際の実装では、既存のIDから最大値を取得して+1する
-            return new Random().Next(1000, 9999);
-        }
-
-        /// <summary>
         /// 保存ボタンクリック
         /// </summary>
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             Save();
+            MainWindow.Instance.SchoolListPage.Update();
         }
 
         /// <summary>
@@ -114,7 +108,7 @@ namespace Mantensei_Database.Windows
         /// </summary>
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = false;
+            //DialogResult = false;
             Close();
         }
     }
@@ -132,8 +126,8 @@ namespace Mantensei_Database.Bindings
 
         public SEW_Model()
         {
-            Classes = new TagInputViewModel("クラス", "classes");
-            Clubs = new TagInputViewModel("部活", "clubs");
+            Classes = new TagInputViewModel("クラス", "クラス");
+            Clubs = new TagInputViewModel("部活", "部活");
         }
     }
 }

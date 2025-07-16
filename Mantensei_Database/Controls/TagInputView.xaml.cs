@@ -81,6 +81,8 @@ namespace Mantensei_Database.Controls
 
         public void AddItem(IEnumerable<string> items)
         {
+            if(items == null) return;
+
             foreach (var item in items)
             {
                 AddItem(item);

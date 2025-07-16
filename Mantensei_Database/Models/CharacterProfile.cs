@@ -44,6 +44,18 @@ namespace Mantensei_Database.Models
         [SaveTarget("あだ名", SaveTargetType.Multiple)]
         public List<string> Nicknames { get; set; } = new();
 
+        [SaveTarget("所属")]
+        public string Affiliation { get; set; }
+
+        [SaveTarget("高等学校")]
+        public string HighSchool { get; set; }
+
+        [SaveTarget("中学校")]
+        public string MiddleSchool { get; set; }
+
+        [SaveTarget("小学校")]
+        public string ElementarySchool { get; set; }
+
         [SaveTarget("クラス")]
         public string Class { get; set; }
 

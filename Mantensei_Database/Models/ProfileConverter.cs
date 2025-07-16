@@ -76,6 +76,8 @@ namespace Mantensei_Database.Models
 
                 try
                 {
+                    Debug.WriteLine($" -- Setting value for {pair.MemberInfo.Name} with key {attr.Key} and scope {attr.Scope}");
+
                     switch (attr.DataType)
                     {
                         case SaveTargetType.Single:
@@ -99,6 +101,8 @@ namespace Mantensei_Database.Models
         private static void SetSingleValue(DependencyObject element, AttributedMember<SaveTargetAttribute> pair, IProfile profile)
         {
             var value = ExtractValue(element);
+            Debug.WriteLine($"Extracted value for {pair.MemberInfo.Name}: {value}");
+
             if (value == null) return;
 
             switch (pair.MemberInfo)
@@ -114,9 +118,6 @@ namespace Mantensei_Database.Models
 
         private static void SetMultipleValue(DependencyObject element, AttributedMember<SaveTargetAttribute> pair, IProfile profile)
         {
-            Debug.WriteLine($"");
-            Debug.WriteLine($"Setting multiple value for \"{pair.MemberInfo.Name}\"");
-
             var stringList = ExtractStringList(element);
 
             if (stringList == null) return;
@@ -218,7 +219,6 @@ namespace Mantensei_Database.Models
 
         private static void ApplyComplexValue(DependencyObject element, object value)
         {
-            // DeesItemの場合
             if (value is List<DeesItem> deesList)
             {
                 var stringList = deesList.Select(d => d.Text).ToList();
@@ -226,11 +226,10 @@ namespace Mantensei_Database.Models
             }
         }
 
-        // 既存のメソッドは変更なし
         private static object? ExtractValue(DependencyObject element) => element switch
         {
             TextBox tb => tb.Text,
-            ComboBox cb => cb.SelectedItem,
+            ComboBox cb => cb.Text,
             CheckBox chk => chk.IsChecked ?? false,
             Slider slider => slider.Value,
             TextBlock textBlock => textBlock.Text,

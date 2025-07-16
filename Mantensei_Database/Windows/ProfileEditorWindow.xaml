@@ -155,25 +155,28 @@
             <GroupBox Header="学籍情報">
                 <StackPanel>
                     <Border Padding="0 5">
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <TextBlock Text="所属" Width="50" TextAlignment="Center"/>
+                            <ComboBox Width="125" Tag="所属"/>
+                            <TextBlock Text="クラス" Width="50" TextAlignment="Center"/>
+                            <ComboBox Width="125" Tag="クラス"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <Border Padding="0 5">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                                 <TextBlock Text="高校" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75"/>
+                                <ComboBox Width="75" Tag="高等学校"/>
                                 <TextBlock Text="中学校" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75"/>
+                                <ComboBox Width="75" Tag="中学校"/>
                                 <TextBlock Text="小学校" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75"/>
+                                <ComboBox Width="75" Tag="小学校"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
-                    <Border Padding="0 5" Margin="0 10">
+                    <Border Padding="0 5">
                         <StackPanel Orientation="Vertical">
-                            <StackPanel Orientation="Horizontal" Margin="0 5">
-                                <TextBlock Text="クラス" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="125" Tag="クラス"/>
-                                <TextBlock Text="部活動" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="125" Tag="部活"/>
-                            </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0 5">
                                 <TextBlock Text="1年" Width="50" TextAlignment="Center"/>
                                 <ComboBox Width="75"/>
@@ -181,6 +184,10 @@
                                 <ComboBox Width="75"/>
                                 <TextBlock Text="3年" Width="50" TextAlignment="Center"/>
                                 <ComboBox Width="75"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0 5">
+                                <TextBlock Text="部活動" Width="50" TextAlignment="Center"/>
+                                <ComboBox Width="125" Tag="部活"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>

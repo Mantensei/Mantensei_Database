@@ -194,7 +194,7 @@ namespace Mantensei_Database.Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public SchoolType SchoolType { get; set; }
+        public string SchoolType { get; set; }
         public string SchoolTypeDisplay { get; set; }
         public int ClassCount { get; set; }
         public int ClubCount { get; set; }
@@ -208,22 +208,10 @@ namespace Mantensei_Database.Models
             Id = profile.Id;
             Name = profile.Name ?? "";
             SchoolType = profile.SchoolType;
-            SchoolTypeDisplay = GetSchoolTypeDisplay(profile.SchoolType);
+            SchoolTypeDisplay = SchoolType;
             ClassCount = profile.Classes?.Count ?? 0;
             ClubCount = profile.Clubs?.Count ?? 0;
             Description = profile.Description ?? "";
-        }
-
-        private string GetSchoolTypeDisplay(SchoolType type)
-        {
-            return type switch
-            {
-                SchoolType.Elementary => "小学校",
-                SchoolType.Middle => "中学校",
-                SchoolType.High => "高等学校",
-                SchoolType.Other => "その他",
-                _ => "不明"
-            };
         }
     }
 }
