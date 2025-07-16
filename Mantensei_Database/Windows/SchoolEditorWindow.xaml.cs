@@ -1,11 +1,14 @@
 ﻿using Mantensei_Database.Bindings;
+using Mantensei_Database.Common;
 using Mantensei_Database.Controls;
 using Mantensei_Database.Models;
 using Mantensei_Database.ViewModels;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using Path = System.IO.Path;
 
 namespace Mantensei_Database.Windows
 {
@@ -14,95 +17,79 @@ namespace Mantensei_Database.Windows
     /// </summary>
     public partial class SchoolEditorWindow : Window
     {
-        private SchoolInfo _schoolInfo;
-        private bool _isEditing;
+        private SchoolProfile _profile;
+        private string _currentFilePath = null;
 
-        public SchoolEditorWindow() : this(null) { }
+        public SchoolEditorWindow() : this(default) { }
 
-        public SchoolEditorWindow(SchoolInfo schoolInfo)
+        // 編集用コンストラクタ
+        public SchoolEditorWindow(SchoolProfile profile)
         {
             InitializeComponent();
             DataContext = new SEW_Model();
-
-            _schoolInfo = schoolInfo;
-            _isEditing = schoolInfo != null;
-
-            InitializeSchoolInfo();
-            LoadDataToUI();
+            _profile = profile;
+            Loaded += (s, e) => InitializeProfile();
         }
 
         /// <summary>
-        /// 学校情報の初期化
+        /// プロファイルデータの初期化
         /// </summary>
-        private void InitializeSchoolInfo()
+        private void InitializeProfile()
         {
-            if (_schoolInfo == null)
+            if (_profile == null)
             {
-                _schoolInfo = new SchoolInfo
-                {
-                    Id = GenerateNewId(),
-                    SchoolType = SchoolType.High,
-                    Name = string.Empty,
-                    Classes = new List<string>(),
-                    Clubs = new List<string>(),
-                    Description = string.Empty,
-                    NotesSupplement = string.Empty
-                };
-                Title = "新規学校情報登録";
+                _profile = new SchoolProfile();
+                _profile.Id = ProfileDataBase.GenerateNewId<SchoolProfile>();
+                Title = "新規作成";
             }
             else
             {
-                Title = $"学校情報編集 - {_schoolInfo.Name}";
+                Title = $"編集 - {_profile.Name}";
+                // UIにデータを反映
             }
+
+            ProfileConverter.LoadToUI(this, _profile);
         }
 
-        /// <summary>
-        /// データをUIに反映
-        /// </summary>
-        private void LoadDataToUI()
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
-            // 学校タイプの設定
-            var schoolTypeItem = SchoolTypeCombo.Items.Cast<ComboBoxItem>()
-                .FirstOrDefault(item => item.Tag.ToString() == _schoolInfo.SchoolType.ToString());
-            if (schoolTypeItem != null)
-            {
-                SchoolTypeCombo.SelectedItem = schoolTypeItem;
-            }
-
-            // TagInputView のデータ設定
-            var model = (SEW_Model)DataContext;
-            model.Classes.Items.Clear();
-            model.Clubs.Items.Clear();
-
-            foreach (var className in _schoolInfo.Classes)
-            {
-                model.Classes.Items.Add(className);
-            }
-
-            foreach (var clubName in _schoolInfo.Clubs)
-            {
-                model.Clubs.Items.Add(clubName);
-            }
+            Save();
         }
 
-        /// <summary>
-        /// UIからデータを取得
-        /// </summary>
-        private void SaveDataFromUI()
+        void Save()
         {
-            // 学校タイプの取得
-            if (SchoolTypeCombo.SelectedItem is ComboBoxItem selectedItem)
+            try
             {
-                if (Enum.TryParse<SchoolType>(selectedItem.Tag.ToString(), out var schoolType))
+                // UIからデータを取得
+                var profile = new SchoolProfile();
+                ProfileConverter.LoadFromUI(this, profile);
+
+                // ファイルパスが未設定の場合はデフォルトパスに保存
+                if (string.IsNullOrEmpty(_currentFilePath))
                 {
-                    _schoolInfo.SchoolType = schoolType;
-                }
-            }
+                    ProfileService.SaveToDefaultPath(profile);
+                    var profilesDir = FileSystemUtility.GetProfilesDirectory(profile);
+                    var fileName = ProfileService.GetDefaultFileName(profile);
+                    _currentFilePath = Path.Combine(profilesDir, fileName);
 
-            // TagInputView のデータ取得
-            var model = (SEW_Model)DataContext;
-            _schoolInfo.Classes = model.Classes.Items.ToList();
-            _schoolInfo.Clubs = model.Clubs.Items.ToList();
+                    MessageBox.Show($"保存しました。\n保存場所: {_currentFilePath}",
+                                  "保存完了", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    // 既存ファイルに上書き保存
+                    ProfileService.SaveToXml(profile, _currentFilePath);
+                    MessageBox.Show("保存しました。", "保存完了", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+
+                Close();
+
+                MainWindow.Instance.CharacterListPage.LoadAll();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"保存に失敗しました: {ex.Message}", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         /// <summary>
@@ -119,34 +106,7 @@ namespace Mantensei_Database.Windows
         /// </summary>
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                // 入力チェック
-                if (string.IsNullOrWhiteSpace(SchoolNameTextBox.Text))
-                {
-                    MessageBox.Show("学校名を入力してください。", "入力エラー",
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                    SchoolNameTextBox.Focus();
-                    return;
-                }
-
-                // データ保存
-                SaveDataFromUI();
-
-                // 実際の保存処理（ここでは省略）
-                // SchoolInfoService.Save(_schoolInfo);
-
-                MessageBox.Show("学校情報を保存しました。", "保存完了",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-
-                DialogResult = true;
-                Close();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"保存に失敗しました: {ex.Message}", "エラー",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            Save();
         }
 
         /// <summary>

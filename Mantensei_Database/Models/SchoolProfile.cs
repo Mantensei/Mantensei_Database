@@ -1,6 +1,6 @@
 ﻿namespace Mantensei_Database.Models
 {
-    public class SchoolInfo
+    public class SchoolProfile : IProfile
     {
         [SaveTarget("ID")]
         public int Id { get; set; }

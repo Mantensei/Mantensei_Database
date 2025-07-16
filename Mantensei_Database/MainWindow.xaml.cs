@@ -5,8 +5,53 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
+
 namespace Mantensei_Database
 {
+    // 目次
+    public partial class MainWindow
+    {
+        public HomePage HomePage => GetPage<HomePage>();
+        public CharacterListPage CharacterListPage => GetPage<CharacterListPage>();
+        public SchoolListPage SchoolListPage => GetPage<SchoolListPage>();
+        public StatisticsPage StatisticsPage => GetPage<StatisticsPage>();
+        public SettingsPage SettingsPage => GetPage<SettingsPage>();
+
+        partial void InitNavigationItems()
+        {
+            // ナビゲーションアイテムを登録
+            RegisterNavigationItem<HomePage>("🏠 ホーム");
+            RegisterNavigationItem<CharacterListPage>("👥 一覧");
+            RegisterNavigationItem<SchoolListPage>("🏫 登録");
+            RegisterNavigationItem<StatisticsPage>("📊 統計");
+            RegisterNavigationItem<SettingsPage>("⚙️ 設定");
+
+            // 初期ページに移動
+            NavigateToPage<HomePage>();
+        }
+    } 
+}
+
+// 空のページクラス（実装予定）
+namespace Mantensei_Database.Pages
+{
+    public partial class HomePage : Page
+    {
+    }
+
+    public partial class StatisticsPage : Page
+    {
+    }
+
+    public partial class SettingsPage : Page
+    {
+    }
+}
+
+
+
+namespace Mantensei_Database 
+{ 
     /// <summary>
     /// ナビゲーションアイテムの情報
     /// </summary>
@@ -26,6 +71,7 @@ namespace Mantensei_Database
         private static MainWindow _instance;
         private readonly Dictionary<Type, Page> _pages = new();
         private readonly List<NavigationItem> _navigationItems = new();
+
         private Type _currentPageType;
 
         /// <summary>
@@ -33,22 +79,15 @@ namespace Mantensei_Database
         /// </summary>
         public static MainWindow Instance => _instance;
 
-        // プロパティアクセス用
-        public HomePage HomePage => GetPage<HomePage>();
-        public CharacterListPage CharacterListPage => GetPage<CharacterListPage>();
-        public SchoolListPage SchoolListPage => GetPage<SchoolListPage>();
-        public StatisticsPage StatisticsPage => GetPage<StatisticsPage>();
-        public SettingsPage SettingsPage => GetPage<SettingsPage>();
-
         public MainWindow()
         {
             InitializeComponent();
             WarmUpJIT();
             InitSingleton();
             InitNavigationItems();
-
-            new Mantensei_Database.Windows.SchoolEditorWindow().Show();
         }
+
+        partial void InitNavigationItems();
 
         void InitSingleton()
         {
@@ -61,19 +100,6 @@ namespace Mantensei_Database
             }
 
             _instance = this;
-        }
-
-        void InitNavigationItems()
-        {
-            // ナビゲーションアイテムを登録
-            RegisterNavigationItem<HomePage>("🏠 ホーム");
-            RegisterNavigationItem<CharacterListPage>("👥 一覧");
-            RegisterNavigationItem<SchoolListPage>("🏫 登録");
-            RegisterNavigationItem<StatisticsPage>("📊 統計");
-            RegisterNavigationItem<SettingsPage>("⚙️ 設定");
-
-            // 初期ページに移動
-            NavigateToPage<HomePage>();
         }
 
         /// <summary>
@@ -98,6 +124,8 @@ namespace Mantensei_Database
 
             _navigationItems.Add(navigationItem);
             NavigationPanel.Children.Add(button);
+
+            _pages.Add(typeof(T), new T());
         }
 
         /// <summary>
@@ -123,22 +151,16 @@ namespace Mantensei_Database
         {
             try
             {
-                // 既にそのページを表示中なら何もしない
                 if (_currentPageType == pageType && MainFrame.Content != null)
                     return;
 
-                // ページインスタンスを取得または作成
                 if (!_pages.TryGetValue(pageType, out Page page))
                 {
-                    page = (Page)Activator.CreateInstance(pageType);
-                    _pages[pageType] = page;
+                    throw new ArgumentException($"未登録のページタイプ: {pageType.Name}");
                 }
 
-                // フレームにページを設定
                 MainFrame.Content = page;
                 _currentPageType = pageType;
-
-                // ナビゲーションボタンの状態を更新
                 UpdateNavigationButtons();
             }
             catch (Exception ex)
@@ -171,29 +193,5 @@ namespace Mantensei_Database
             _ = new Random().Next();
             _ = typeof(List<int>).GetHashCode();
         }
-    }
-}
-
-// 空のページクラス（実装予定）
-namespace Mantensei_Database.Pages
-{
-    public partial class HomePage : Page
-    {
-    }
-
-    public partial class SchoolListPage : Page
-    {
-    }
-
-    public partial class CharacterListPage : Page
-    {
-    }
-
-    public partial class StatisticsPage : Page
-    {
-    }
-
-    public partial class SettingsPage : Page
-    {
     }
 }

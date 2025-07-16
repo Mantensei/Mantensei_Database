@@ -17,6 +17,7 @@ namespace Mantensei_Database.Common
         public const string AUTHOR_NAME = "Mantensei";
         public const string APP_NAME = "Mantensei_Database";
         public const string PROFILES_DIRECTORY = "profiles";
+        public const string SCHOOOL_PROFILES_DIRECTORY = "schools";
         public const string FILE_EXTENSION = ".xml";
 
         // 他のアプリケーション全体の設定もここに追加可能
@@ -32,10 +33,24 @@ namespace Mantensei_Database.Common
         /// <summary>
         /// プロファイルディレクトリのパスを取得
         /// </summary>
-        public static string GetProfilesDirectory()
+        public static string GetProfilesDirectory(IProfile profile)
         {
             var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var profilesPath = Path.Combine(localAppData, AppConfig.AUTHOR_NAME, AppConfig.APP_NAME, AppConfig.PROFILES_DIRECTORY);
+            string directory = string.Empty;
+
+            switch(profile)
+            {
+                case CharacterProfile _:
+                    directory = AppConfig.PROFILES_DIRECTORY;
+                    break;
+                case SchoolProfile _:
+                    directory = AppConfig.SCHOOOL_PROFILES_DIRECTORY;
+                    break;
+                default:
+                    throw new ArgumentException("Unsupported profile type");
+            }
+
+            var profilesPath = Path.Combine(localAppData, AppConfig.AUTHOR_NAME, AppConfig.APP_NAME, directory);
 
             if (!Directory.Exists(profilesPath))
             {
@@ -48,12 +63,25 @@ namespace Mantensei_Database.Common
         /// <summary>
         /// 一意なファイル名を生成（ID + タイムスタンプベース）
         /// </summary>
-        public static string CreateUniqueFileName(CharacterProfile profile)
+        public static string CreateUniqueFileName(IProfile profile)
         {
             // ID がある場合は ID を使用
             if (profile.Id > 0)
             {
-                return $"character_{profile.Id:D6}{AppConfig.FILE_EXTENSION}";
+                string header = string.Empty;
+                switch(profile)
+                {
+                    case CharacterProfile _:
+                        header = "character";
+                        break;
+                    case SchoolProfile _:
+                        header = "school";
+                        break;
+                    default:
+                        throw new ArgumentException("Unsupported profile type");
+                }
+
+                return $"{header}_{profile.Id:D6}{AppConfig.FILE_EXTENSION}";
             }
 
             // ID がない場合はタイムスタンプを使用
@@ -171,11 +199,6 @@ namespace Mantensei_Database.Models
         /// <summary>
         /// 新しいIDを生成
         /// </summary>
-        public static int GenerateNewId()
-        {
-            var max = CharacterDataBase.AllProfiles.Max(x => x.Id);
-            Debug.WriteLine($"？＿？？？？？？？？？？？？Current max ID: {max}");
-            return max + 1;
-        }
+      
     }
 }

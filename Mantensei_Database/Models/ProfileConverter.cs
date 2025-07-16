@@ -15,6 +15,11 @@ using MantenseiLib.WPF;
 
 namespace Mantensei_Database.Models
 {
+    public interface IProfile 
+    {
+        int Id { get; set; }
+    }
+
     // データ変換ロジッククラス
     // 対象探索のスコープ（自己要素 or 子要素）
     public enum SaveTargetScope { Self, Children }
@@ -52,17 +57,16 @@ namespace Mantensei_Database.Models
 
 
     // データ変換ロジッククラス
-    // 改良されたCharacterProfileConverter
-    public static class CharacterProfileConverter
+    // 改良されたIProfileConverter
+    public static class ProfileConverter
     {
-        public static CharacterProfile LoadFromUI(DependencyObject root)
+        public static IProfile LoadFromUI(DependencyObject root, in IProfile profile)
         {
-            var profile = new CharacterProfile();
             SaveFromUI(root, profile);
             return profile;
         }
 
-        public static void SaveFromUI(DependencyObject root, CharacterProfile profile)
+        public static void SaveFromUI(DependencyObject root, IProfile profile)
         {
             foreach (var pair in AttributeUtility.GetAttributedFields<SaveTargetAttribute>(profile))
             {
@@ -92,7 +96,7 @@ namespace Mantensei_Database.Models
             }
         }
 
-        private static void SetSingleValue(DependencyObject element, AttributedMember<SaveTargetAttribute> pair, CharacterProfile profile)
+        private static void SetSingleValue(DependencyObject element, AttributedMember<SaveTargetAttribute> pair, IProfile profile)
         {
             var value = ExtractValue(element);
             if (value == null) return;
@@ -108,7 +112,7 @@ namespace Mantensei_Database.Models
             }
         }
 
-        private static void SetMultipleValue(DependencyObject element, AttributedMember<SaveTargetAttribute> pair, CharacterProfile profile)
+        private static void SetMultipleValue(DependencyObject element, AttributedMember<SaveTargetAttribute> pair, IProfile profile)
         {
             Debug.WriteLine($"");
             Debug.WriteLine($"Setting multiple value for \"{pair.MemberInfo.Name}\"");
@@ -128,7 +132,7 @@ namespace Mantensei_Database.Models
             }
         }
 
-        private static void SetComplexValue(DependencyObject element, AttributedMember<SaveTargetAttribute> pair, CharacterProfile profile)
+        private static void SetComplexValue(DependencyObject element, AttributedMember<SaveTargetAttribute> pair, IProfile profile)
         {
             switch(pair.MemberInfo.Name)
             {
@@ -171,7 +175,7 @@ namespace Mantensei_Database.Models
         }
 
         // LoadToUIメソッドも同様に更新
-        public static void LoadToUI(DependencyObject root, CharacterProfile profile)
+        public static void LoadToUI(DependencyObject root, IProfile profile)
         {
             foreach (var pair in AttributeUtility.GetAttributedFields<SaveTargetAttribute>(profile))
             {

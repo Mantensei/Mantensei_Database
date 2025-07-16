@@ -16,65 +16,22 @@ namespace Mantensei_Database.Pages
 {
     public partial class CharacterListPage : Page
     {
-        private static ObservableCollection<CharacterListItem> _characters;
-
+        private static ObservableCollection<CharacterListItem> _profileListItems = new();
         private ICollectionView _filteredView;
 
         public CharacterListPage()
         {
             InitializeComponent();
 
-            _characters = new ObservableCollection<CharacterListItem>();
-            _filteredView = CollectionViewSource.GetDefaultView(_characters);
+            _filteredView = CollectionViewSource.GetDefaultView(_profileListItems);
             _filteredView.Filter = CharacterFilter;
 
             CharacterDataGrid.ItemsSource = _filteredView;
-            LoadCharacters();
+            LoadAll();
             SetupFilterComboBoxes();
         }
 
-        /// <summary>
-        /// キャラクターデータを読み込み
-        /// </summary>
-        public void LoadCharacters()
-        {
-            _characters.Clear();
-
-            try
-            {
-                var profilesDir = FileSystemUtility.GetProfilesDirectory();
-                if (!Directory.Exists(profilesDir))
-                {
-                    UpdateStatus();
-                    return;
-                }
-
-                var xmlFiles = Directory.GetFiles(profilesDir, "*.xml");
-
-                foreach (var filePath in xmlFiles)
-                {
-                    try
-                    {
-                        var profile = CharacterProfileService.LoadFromXml(filePath);
-                        var listItem = new CharacterListItem(profile, filePath);
-                        _characters.Add(listItem);
-                        CharacterDataBase.AddProfile(profile);
-                    }
-                    catch (Exception ex)
-                    {
-                        // 個別ファイルの読み込みエラーは無視して続行
-                        System.Diagnostics.Debug.WriteLine($"Failed to load {filePath}: {ex.Message}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"キャラクターデータの読み込みに失敗しました: {ex.Message}",
-                    "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-
-            UpdateStatus();
-        }
+        public void LoadAll() => ProfileService.LoadAll<CharacterProfile, CharacterListItem>(_profileListItems);
 
         /// <summary>
         /// フィルタ用コンボボックスの設定
@@ -82,7 +39,7 @@ namespace Mantensei_Database.Pages
         private void SetupFilterComboBoxes()
         {
             // クラスフィルタの設定
-            var classes = _characters.Select(c => c.Class)
+            var classes = _profileListItems.Select(c => c.Class)
                                    .Where(c => !string.IsNullOrEmpty(c))
                                    .Distinct()
                                    .OrderBy(c => c)
@@ -96,7 +53,7 @@ namespace Mantensei_Database.Pages
             }
 
             // 部活フィルタの設定
-            var clubs = _characters.Select(c => c.Club)
+            var clubs = _profileListItems.Select(c => c.Club)
                                   .Where(c => !string.IsNullOrEmpty(c))
                                   .Distinct()
                                   .OrderBy(c => c)
@@ -163,12 +120,12 @@ namespace Mantensei_Database.Pages
         /// </summary>
         private void UpdateStatus()
         {
-            if (_characters == null)
+            if (_profileListItems == null || _filteredView == null)
             {
                 return;
             }
 
-            var totalCount = _characters.Count;
+            var totalCount = _profileListItems.Count;
             var filteredCount = _filteredView.Cast<object>().Count();
 
             if (totalCount == filteredCount)
@@ -254,7 +211,7 @@ namespace Mantensei_Database.Pages
 
             if (editorWindow.ShowDialog() == true)
             {
-                LoadCharacters();
+                LoadAll();
                 SetupFilterComboBoxes();
             }
         }
@@ -284,7 +241,7 @@ namespace Mantensei_Database.Pages
                 try
                 {
                     File.Delete(selectedCharacter.FilePath);
-                    LoadCharacters();
+                    LoadAll();
                     SetupFilterComboBoxes();
                     MessageBox.Show("キャラクターを削除しました。", "削除完了", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
@@ -295,15 +252,20 @@ namespace Mantensei_Database.Pages
             }
         }
 
+        public void Refresh() 
+        {
+            LoadAll();
+            UpdateStatus();
+        }
+
         private void RefreshButton_Click(object sender, RoutedEventArgs e)
         {
-            LoadCharacters();
-            SetupFilterComboBoxes();
+            Refresh();
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            //this.Close();
+
         }
 
         #endregion
@@ -315,13 +277,13 @@ namespace Mantensei_Database.Pages
         {
             try
             {
-                var profile = CharacterProfileService.LoadFromXml(character.FilePath);
+                var profile = ProfileService.LoadFromXml<CharacterProfile>(character.FilePath);
                 var editorWindow = new Mantensei_Database.Windows.ProfileEditorWindow(profile);
                 //editorWindow.Owner = this;
 
                 if (editorWindow.ShowDialog() == true)
                 {
-                    LoadCharacters();
+                    LoadAll();
                     SetupFilterComboBoxes();
                 }
             }
@@ -336,10 +298,20 @@ namespace Mantensei_Database.Pages
 
 namespace Mantensei_Database.Models
 {
+    public abstract class ProfileListItem 
+    {
+        public string FilePath { get; set; }
+
+        public virtual void InitProfile(IProfile prof, string filePath)
+        {
+            FilePath = filePath;
+        }
+    }
+
     /// <summary>
     /// キャラクター一覧表示用のデータモデル
     /// </summary>
-    public class CharacterListItem
+    public class CharacterListItem : ProfileListItem
     {
         public int Id { get; set; }
         public string FullName { get; set; }
@@ -347,31 +319,77 @@ namespace Mantensei_Database.Models
         public string Class { get; set; }
         public string Club { get; set; }
         public DateTime LastModified { get; set; }
-        public string FilePath { get; set; }
 
-        public CharacterListItem(CharacterProfile profile, string filePath)
+        public override void InitProfile(IProfile prof, string filePath)
         {
+            base.InitProfile(prof, filePath);
+
+            var profile = prof as CharacterProfile;
+
             Id = profile.Id;
             FullName = profile.FullName ?? "";
             FullKana = profile.Kana ?? "";
             Class = profile.Class ?? "";
             Club = profile.Club ?? "";
             LastModified = File.GetLastWriteTime(filePath);
-            FilePath = filePath;
         }
     }
 }
 
 namespace Mantensei_Database.Models
 {
-    public static class CharacterDataBase
+    public static class ProfileDataBase
     {
-        static List<CharacterProfile> _allProfiles = new List<CharacterProfile>();
-        public static CharacterProfile[] AllProfiles => _allProfiles.ToArray();
+        static List<CharacterProfile> _allCharacterProfiles = new ();
+        static List<SchoolProfile> _allSchoolProfiles = new ();
+        public static CharacterProfile[] AllProfiles => _allCharacterProfiles.ToArray();
+        public static SchoolProfile[] AllSchoolProfiles => _allSchoolProfiles.ToArray();
 
-        public static void AddProfile(CharacterProfile profile)
+        public static T[] GetAllProfiles<T>() where T : IProfile
         {
-            _allProfiles.Add(profile);
+            if (typeof(T) == typeof(CharacterProfile))
+            {
+                return _allCharacterProfiles.OfType<T>().ToArray();
+            }
+            else if (typeof(T) == typeof(SchoolProfile))
+            {
+                return _allSchoolProfiles.OfType<T>().ToArray();
+            }
+            else
+            {
+                throw new ArgumentException("Unsupported profile type");
+            }
+        }
+
+        public static void AddProfile(IProfile profile)
+        {
+            switch(profile)
+            {
+                case CharacterProfile characterProfile:
+                    _allCharacterProfiles.Add(characterProfile);
+                    break;
+                case SchoolProfile schoolProfile:
+                    _allSchoolProfiles.Add(schoolProfile);
+                    break;
+                default:
+                    throw new ArgumentException("Unsupported profile type");
+            }
+        }
+
+        /// <summary>
+        /// 新しいIDを生成
+        /// </summary>
+        public static int GenerateNewId<T>() where T : IProfile
+        {
+            try
+            {
+                var max = GetAllProfiles<T>().Max(x => x.Id);
+                return max + 1;
+            }
+            catch (Exception ex)
+            {
+                return 1;
+            }
         }
     }
 }

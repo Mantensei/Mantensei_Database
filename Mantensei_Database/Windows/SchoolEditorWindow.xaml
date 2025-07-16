@@ -99,6 +99,7 @@
                             <ComboBoxItem Content="小学校" Tag="Elementary"/>
                             <ComboBoxItem Content="中学校" Tag="Middle"/>
                             <ComboBoxItem Content="高等学校" Tag="High"/>
+                            <ComboBoxItem Content="大学" Tag="High"/>
                             <ComboBoxItem Content="その他" Tag="Other"/>
                         </ComboBox>
 

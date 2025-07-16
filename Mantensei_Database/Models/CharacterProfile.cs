@@ -4,15 +4,18 @@ using Mantensei_Database.Models;
 using MantenseiLib;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Windows;
 using System.Xml.Serialization;
 
 namespace Mantensei_Database.Models
 {
-    public partial class CharacterProfile
+    public partial class CharacterProfile : IProfile
     {
         [SaveTarget("ID")]
         public int Id { get; set; }
@@ -162,14 +165,55 @@ namespace Mantensei_Database.Models
 
 namespace Mantensei_Database.Models
 {
-    public static class CharacterProfileService
+    public static class ProfileService
     {
+        /// <summary>
+        /// キャラクターデータを読み込み
+        /// </summary>
+        public static void LoadAll<T1, T2>(in ObservableCollection<T2> profiles) where T1 : IProfile, new() where T2 : ProfileListItem, new()
+        {
+            profiles.Clear();
+
+            try
+            {
+                var profilesDir = FileSystemUtility.GetProfilesDirectory(new T1());
+                if (!Directory.Exists(profilesDir))
+                {
+                    return;
+                }
+
+                var xmlFiles = Directory.GetFiles(profilesDir, "*.xml");
+
+                foreach (var filePath in xmlFiles)
+                {
+                    try
+                    {
+                        var profile = ProfileService.LoadFromXml<T1>(filePath);
+                        var listItem = new T2();
+                        listItem.InitProfile(profile, filePath);
+                        profiles.Add(listItem);
+                        ProfileDataBase.AddProfile(profile);
+                    }
+                    catch (Exception ex)
+                    {
+                        // 個別ファイルの読み込みエラーは無視して続行
+                        System.Diagnostics.Debug.WriteLine($"Failed to load {filePath}: {ex.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"キャラクターデータの読み込みに失敗しました: {ex.Message}",
+                    "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         /// <summary>
         /// デフォルトパスに保存
         /// </summary>
-        public static void SaveToDefaultPath(CharacterProfile profile)
+        public static void SaveToDefaultPath(IProfile profile)
         {
-            var profilesDir = FileSystemUtility.GetProfilesDirectory();
+            var profilesDir = FileSystemUtility.GetProfilesDirectory(profile);
             var fileName = GetDefaultFileName(profile);
             var filePath = Path.Combine(profilesDir, fileName);
             SaveToXml(profile, filePath);
@@ -178,13 +222,13 @@ namespace Mantensei_Database.Models
         /// <summary>
         /// XMLファイルに保存
         /// </summary>
-        public static void SaveToXml(CharacterProfile profile, string filePath)
+        public static void SaveToXml(IProfile profile, string filePath)
         {
             try
             {
                 FileSystemUtility.EnsureDirectoryExists(filePath);
 
-                var serializer = new XmlSerializer(typeof(CharacterProfile));
+                var serializer = new XmlSerializer(profile.GetType());
                 using var writer = new StreamWriter(filePath, false, Encoding.UTF8);
                 serializer.Serialize(writer, profile);
             }
@@ -197,13 +241,13 @@ namespace Mantensei_Database.Models
         /// <summary>
         /// XMLファイルから読み込み
         /// </summary>
-        public static CharacterProfile LoadFromXml(string filePath)
+        public static T LoadFromXml<T>(string filePath)
         {
             try
             {
-                var serializer = new XmlSerializer(typeof(CharacterProfile));
+                var serializer = new XmlSerializer(typeof(T));
                 using var reader = new StreamReader(filePath, Encoding.UTF8);
-                return (CharacterProfile)serializer.Deserialize(reader);
+                return (T)serializer.Deserialize(reader);
             }
             catch (Exception ex)
             {
@@ -214,7 +258,7 @@ namespace Mantensei_Database.Models
         /// <summary>
         /// デフォルトファイル名を生成
         /// </summary>
-        public static string GetDefaultFileName(CharacterProfile profile)
+        public static string GetDefaultFileName(IProfile profile)
         {
             return FileSystemUtility.CreateUniqueFileName(profile);
         }

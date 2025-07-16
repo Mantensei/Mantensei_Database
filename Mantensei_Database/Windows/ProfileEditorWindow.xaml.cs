@@ -54,7 +54,7 @@ namespace Mantensei_Database.Windows
             if (_profile == null)
             {
                 _profile = new CharacterProfile();
-                _profile.Id = CharacterProfile.GenerateNewId();
+                _profile.Id = ProfileDataBase.GenerateNewId<CharacterProfile>();
                 Title = "新規作成";
             }
             else
@@ -63,7 +63,7 @@ namespace Mantensei_Database.Windows
                 // UIにデータを反映
             }
 
-            CharacterProfileConverter.LoadToUI(this, _profile);
+            ProfileConverter.LoadToUI(this, _profile);
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -77,14 +77,15 @@ namespace Mantensei_Database.Windows
             try
             {
                 // UIからデータを取得
-                var profile = CharacterProfileConverter.LoadFromUI(this);
+                var profile = new CharacterProfile();
+                ProfileConverter.LoadFromUI(this, profile);
 
                 // ファイルパスが未設定の場合はデフォルトパスに保存
                 if (string.IsNullOrEmpty(_currentFilePath))
                 {
-                    CharacterProfileService.SaveToDefaultPath(profile);
-                    var profilesDir = FileSystemUtility.GetProfilesDirectory();
-                    var fileName = CharacterProfileService.GetDefaultFileName(profile);
+                    ProfileService.SaveToDefaultPath(profile);
+                    var profilesDir = FileSystemUtility.GetProfilesDirectory(profile);
+                    var fileName = ProfileService.GetDefaultFileName(profile);
                     _currentFilePath = Path.Combine(profilesDir, fileName);
 
                     MessageBox.Show($"保存しました。\n保存場所: {_currentFilePath}",
@@ -93,12 +94,12 @@ namespace Mantensei_Database.Windows
                 else
                 {
                     // 既存ファイルに上書き保存
-                    CharacterProfileService.SaveToXml(profile, _currentFilePath);
+                    ProfileService.SaveToXml(profile, _currentFilePath);
                     MessageBox.Show("保存しました。", "保存完了", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
 
                 Close();
-                MainWindow.Instance.CharacterListPage.LoadCharacters();
+                MainWindow.Instance.CharacterListPage.LoadAll();
             }
             catch (Exception ex)
             {
