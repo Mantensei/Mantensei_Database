@@ -130,11 +130,11 @@ namespace Mantensei_Database.Pages
 
             if (totalCount == filteredCount)
             {
-                StatusTextBlock.Text = $"{totalCount}件のキャラクター";
+                StatusTextBlock.Text = $"{totalCount}件";
             }
             else
             {
-                StatusTextBlock.Text = $"{filteredCount}件のキャラクター（全{totalCount}件中）";
+                StatusTextBlock.Text = $"{filteredCount}件（全{totalCount}件中）";
             }
         }
 
@@ -243,7 +243,7 @@ namespace Mantensei_Database.Pages
                     File.Delete(selectedCharacter.FilePath);
                     LoadAll();
                     SetupFilterComboBoxes();
-                    MessageBox.Show("キャラクターを削除しました。", "削除完了", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("削除しました。", "削除完了", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
@@ -366,10 +366,12 @@ namespace Mantensei_Database.Models
             switch(profile)
             {
                 case CharacterProfile characterProfile:
-                    _allCharacterProfiles.Add(characterProfile);
+                    if (_allCharacterProfiles.All(p => p.Id != characterProfile.Id))
+                        _allCharacterProfiles.Add(characterProfile);
                     break;
                 case SchoolProfile schoolProfile:
-                    _allSchoolProfiles.Add(schoolProfile);
+                    if (_allSchoolProfiles.All(p => p.Id != schoolProfile.Id))
+                        _allSchoolProfiles.Add(schoolProfile);
                     break;
                 default:
                     throw new ArgumentException("Unsupported profile type");

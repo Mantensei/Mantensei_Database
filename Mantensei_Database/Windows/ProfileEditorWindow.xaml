@@ -92,7 +92,7 @@
         </Style>
     </Window.Resources>
 
-    <Grid Margin="10">
+    <Grid x:Name="root" Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="80"/>
@@ -152,26 +152,33 @@
                     </StackPanel>
                 </Grid>
             </GroupBox>
+            <!-- ProfileEditorWindow.xaml の学籍情報 GroupBox を以下に置き換え -->
+
             <GroupBox Header="学籍情報">
                 <StackPanel>
                     <Border Padding="0 5">
                         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                             <TextBlock Text="所属" Width="50" TextAlignment="Center"/>
-                            <ComboBox Width="125" Tag="所属"/>
+                            <ComboBox Width="125" Tag="所属" 
+                          ItemsSource="{Binding Schools}"
+                          SelectedItem="{Binding SelectedSchool}"
+                          DisplayMemberPath="Name"/>
                             <TextBlock Text="クラス" Width="50" TextAlignment="Center"/>
-                            <ComboBox Width="125" Tag="クラス"/>
+                            <ComboBox x:Name="CurrentClass" Width="125" Tag="クラス"
+                          ItemsSource="{Binding Classes}"
+                          SelectedItem="{Binding SelectedClass}"/>
                         </StackPanel>
                     </Border>
-                    
+
                     <Border Padding="0 5">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                                 <TextBlock Text="高校" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75" Tag="高等学校"/>
+                                <ComboBox Width="75" Tag="高等学校" ItemsSource="{Binding High}"/>
                                 <TextBlock Text="中学校" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75" Tag="中学校"/>
+                                <ComboBox Width="75" Tag="中学校" ItemsSource="{Binding Middle}"/>
                                 <TextBlock Text="小学校" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75" Tag="小学校"/>
+                                <ComboBox Width="75" Tag="小学校" ItemsSource="{Binding Elementary}"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -179,15 +186,16 @@
                         <StackPanel Orientation="Vertical">
                             <StackPanel Orientation="Horizontal" Margin="0 5">
                                 <TextBlock Text="1年" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75"/>
+                                <ComboBox Width="75" ItemsSource="{Binding Grade1Classes}"/>
                                 <TextBlock Text="2年" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75"/>
+                                <ComboBox Width="75" ItemsSource="{Binding Grade2Classes}"/>
                                 <TextBlock Text="3年" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75"/>
+                                <ComboBox Width="75" ItemsSource="{Binding Grade3Classes}"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0 5">
                                 <TextBlock Text="部活動" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="125" Tag="部活"/>
+                                <ComboBox Width="125" Tag="部活"
+                              ItemsSource="{Binding Clubs}"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>

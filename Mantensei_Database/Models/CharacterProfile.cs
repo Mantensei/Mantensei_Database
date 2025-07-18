@@ -59,6 +59,15 @@ namespace Mantensei_Database.Models
         [SaveTarget("クラス")]
         public string Class { get; set; }
 
+        [SaveTarget("1年")]
+        public string Grade1Class { get; set; }
+
+        [SaveTarget("2年")]
+        public string Grade2Class { get; set; }
+
+        [SaveTarget("3年")]
+        public string Grade3Class { get; set; }
+
         [SaveTarget("部活")]
         public string Club { get; set; }
 

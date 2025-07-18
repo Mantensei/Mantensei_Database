@@ -4,13 +4,19 @@ using Mantensei_Database.Common;
 using Mantensei_Database.Controls;
 using Mantensei_Database.Models;
 using Mantensei_Database.ViewModels;
+using Mantensei_Database.Windows;
 using MantenseiLib;
+using MantenseiLib.WPF;
 using Microsoft.Win32;
+using Microsoft.Windows.Themes;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -40,7 +46,7 @@ namespace Mantensei_Database.Windows
         public ProfileEditorWindow(CharacterProfile profile)
         {
             InitializeComponent();
-            DataContext = new PEW_Model();
+            DataContext = new PEW_Model(this);
             _profile = profile;
 
             Loaded += (s, e) => InitializeProfile();
@@ -164,19 +170,198 @@ namespace Mantensei_Database.Windows
 
 namespace Mantensei_Database.Bindings
 {
-    public class PEW_Model
+    public class PEW_Model : INotifyPropertyChanged
     {
+        ProfileEditorWindow _window;
+
         public TagInputViewModel FavoriteThings { get; private set; }
         public TagInputViewModel NickNames { get; private set; }
         public TagInputViewModel Traits { get; private set; }
         public TagInputViewModel Dees { get; private set; }
 
-        public PEW_Model()
+
+        public ObservableCollection<SchoolProfile> Schools { get; private set; } = new();
+        public ObservableCollection<string> Classes { get; private set; } = new();
+        public ObservableCollection<string> Grade1Classes { get; private set; } = new();
+        public ObservableCollection<string> Grade2Classes { get; private set; } = new();
+        public ObservableCollection<string> Grade3Classes { get; private set; } = new();
+        public ObservableCollection<string> Clubs { get; private set; } = new();
+
+        public ObservableCollection<string> High { get; private set; } = new();
+        public ObservableCollection<string> Middle { get; private set; } = new();
+        public ObservableCollection<string> Elementary { get; private set; } = new();
+
+        public ObservableCollection<string>[] ClassCollections => new[]
         {
+            Grade3Classes,
+            Grade2Classes, 
+            Grade1Classes, 
+        };
+
+        public ObservableCollection<string>[] SchoolCollections => new[]
+        {
+            High,
+            Middle, 
+            Elementary,
+        };
+
+        private string _selectedClass;
+        public string SelectedClass
+        {
+            get => _selectedClass;
+            set
+            {
+                _selectedClass = value;
+                OnPropertyChanged();
+
+                if (_window.CurrentClass.SelectedIndex != -1)
+                    NormalizeComboBox(ClassCollections, _selectedClass);
+            }
+        }
+
+        private SchoolProfile _selectedSchool;
+        public SchoolProfile SelectedSchool
+        {
+            get => _selectedSchool;
+            set
+            {
+                _selectedSchool = value;
+                OnPropertyChanged();
+                UpdateSchoolRelatedData();
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public PEW_Model(ProfileEditorWindow profileEditorWindow)
+        {
+            _window = profileEditorWindow;
+
             FavoriteThings = new TagInputViewModel("好き・趣味", "趣味");
             NickNames = new TagInputViewModel("あだ名", "あだ名");
             Traits = new TagInputViewModel("タグ", "タグ");
-            Dees = new TagInputViewModel("ネタ", "ネタ");
+            Dees = new TagInputViewModel("ネタ", "ネタ");            
+
+            LoadSchools();
+        }
+
+        private void LoadSchools()
+        {
+            try
+            {
+                var schools = ProfileDataBase.GetAllProfiles<SchoolProfile>();
+                Schools.Clear();
+                foreach (var school in schools)
+                {
+                    Schools.Add(school);
+
+                    switch(school.SchoolType)
+                    {
+                        case SchoolProfile.SchoolTypeHigh:
+                            High.Add(school.Name);
+                            break;
+                        case SchoolProfile.SchoolTypeMiddle:
+                            Middle.Add(school.Name);
+                            break;
+                        case SchoolProfile.SchoolTypeElementary:
+                            Elementary.Add(school.Name);
+                            break;
+
+                        default: break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"学校データの読み込みエラー: {ex.Message}");
+            }
+        }
+
+        private void UpdateSchoolRelatedData()
+        {
+            // クラス情報を更新
+            Classes.Clear();
+            foreach(var collection in ClassCollections)
+                collection.Clear();
+
+            foreach (var className in SelectedSchool.Classes)
+            {
+                Classes.Add(className);
+
+                if(className.StartsWith('1') || className.StartsWith('１') || className.StartsWith('一'))
+                    Grade1Classes.Add(className);
+                else if (className.StartsWith('2') || className.StartsWith('２') || className.StartsWith('二'))
+                    Grade2Classes.Add(className);
+                else if (className.StartsWith('3') || className.StartsWith('３') || className.StartsWith('三'))
+                    Grade3Classes.Add(className);
+                else
+                    foreach(var collection in ClassCollections)
+                        collection.Add(className);
+            }
+
+            // 部活動情報を更新
+            Clubs.Clear();
+            foreach (var club in SelectedSchool.Clubs)
+            {
+                Clubs.Add(club);
+            }           
+
+            if(SelectedSchool != null)
+                NormalizeComboBox(SchoolCollections, SelectedSchool.Name);
+
+        }
+
+        void NormalizeComboBox(ObservableCollection<string>[] bindings, string selected)
+        {
+            if (bindings.Any(x => x.Contains(selected)))
+            {
+                foreach (var collection in bindings)
+                {
+                    GetComboBox(collection).SelectedIndex = -1;
+                }
+            }
+
+            bool found = false;
+            for (int i = 0; i < bindings.Length; i++)
+            {
+                ObservableCollection<string>? collection = bindings[i];
+                ComboBox combo = GetComboBox(collection);
+
+                for (int j = 0; j < collection.Count; j++)
+                {
+                    string current = collection[j];
+                    combo.IsEnabled = found;
+
+                    if (!found)
+                    {
+                        combo.SelectedIndex = -1; // 初期化
+                        if (current == selected)
+                        {
+                            combo.SelectedItem = current;
+                            found = true;
+                        }
+                    }
+
+                }
+            }
+        }
+
+        ComboBox GetComboBox(ObservableCollection<string> bindings)
+        {
+            foreach(var combo in _window.GetComponentsInChildren<ComboBox>())
+            {
+                if (combo.ItemsSource == bindings)
+                {
+                    return combo;
+                }
+            }
+
+            return null;
+        }
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

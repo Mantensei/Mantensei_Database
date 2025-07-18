@@ -23,9 +23,21 @@
         [SaveTarget("備考")]
         public string NotesSupplement { get; set; }
 
+        public const string SchoolTypeElementary = "小学校";
+        public const string SchoolTypeMiddle = "中学校";
+        public const string SchoolTypeHigh = "高等学校";
+        public const string SchoolTypeUniversity = "大学";
+        public const string SchoolTypeVocational = "専門学校";
+        public const string SchoolTypeOther = "その他";
+
         public static readonly string[] SchoolTypes = new string[]
         {
-            "小学校", "中学校", "高等学校", "大学", "専門学校", "その他",
+            SchoolTypeElementary,
+            SchoolTypeMiddle,
+            SchoolTypeHigh,
+            SchoolTypeUniversity,
+            SchoolTypeVocational,
+            SchoolTypeOther,
         };
     }
 }
