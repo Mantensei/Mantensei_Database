@@ -18,6 +18,7 @@
             <Setter Property="Margin" Value="5 2.5"/>
             <Setter Property="Padding" Value="5 0"/>
             <Setter Property="Background" Value="White"/>
+            <Setter Property="Cursor" Value="Hand"/>
         </Style>
 
         <Style x:Key="ScrollPanel" TargetType="Border">
@@ -33,22 +34,24 @@
         <StackPanel Orientation="Horizontal">
             <TextBlock Text="{Binding Title}" VerticalAlignment="Center" FontWeight="Bold"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <TextBox Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" Width="75" Margin="0 0 -1 0"/>
+                <TextBox Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}" Width="75" Margin="0 0 -1 0" KeyDown="TextBox_KeyDown"/>
                 <Button Content="追加" Command="{Binding AddCommand}" Width="50"/>
             </StackPanel>
         </StackPanel>
         <Border Style="{StaticResource ScrollPanel}" Margin="0 5">
-            <ScrollViewer Height="50" VerticalScrollBarVisibility="Auto">
-                <WrapPanel Orientation="Horizontal">
-                <!--<WrapPanel Orientation="Horizontal" Tag="{Binding TagId}">-->
-                    <ItemsControl ItemsSource="{Binding Items}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding}" Style="{StaticResource TagLabel}" />
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </WrapPanel>
+            <ScrollViewer Height="50" VerticalScrollBarVisibility="Auto" IsTabStop="False">
+                <ItemsControl ItemsSource="{Binding Items}" IsTabStop="False">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" Style="{StaticResource TagLabel}" MouseDown="TagLabel_MouseDown"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </ScrollViewer>
         </Border>
     </StackPanel>

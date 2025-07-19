@@ -18,6 +18,7 @@ namespace Mantensei_Database.Common
         public const string APP_NAME = "Mantensei_Database";
         public const string PROFILES_DIRECTORY = "profiles";
         public const string SCHOOOL_PROFILES_DIRECTORY = "schools";
+        public const string Images_DIRECTORY = "images";
         public const string FILE_EXTENSION = ".xml";
 
         // 他のアプリケーション全体の設定もここに追加可能
@@ -187,18 +188,5 @@ namespace Mantensei_Database.Common
                 Directory.CreateDirectory(directory);
             }
         }
-    }
-}
-
-// CharacterProfile に ID 自動生成機能を追加
-namespace Mantensei_Database.Models
-{
-    public partial class CharacterProfile
-    {
-
-        /// <summary>
-        /// 新しいIDを生成
-        /// </summary>
-      
     }
 }

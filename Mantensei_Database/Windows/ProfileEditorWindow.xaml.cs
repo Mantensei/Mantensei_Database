@@ -3,6 +3,7 @@ using Mantensei_Database.Bindings;
 using Mantensei_Database.Common;
 using Mantensei_Database.Controls;
 using Mantensei_Database.Models;
+using Mantensei_Database.Services;
 using Mantensei_Database.ViewModels;
 using Mantensei_Database.Windows;
 using MantenseiLib;
@@ -29,6 +30,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using static System.Net.Mime.MediaTypeNames;
 using Path = System.IO.Path;
+using Image = System.Windows.Controls.Image;
 
 namespace Mantensei_Database.Windows
 {
@@ -38,7 +40,7 @@ namespace Mantensei_Database.Windows
     public partial class ProfileEditorWindow : Window
     {
         private CharacterProfile _profile;
-        private string _currentFilePath = null;
+        private BitmapSource _currentImage = null;
 
         public ProfileEditorWindow() : this(default) { }
 
@@ -70,6 +72,90 @@ namespace Mantensei_Database.Windows
             }
 
             ProfileConverter.LoadToUI(this, _profile);
+            LoadProfileImage();
+        }
+
+        /// <summary>
+        /// プロファイル画像を読み込み
+        /// </summary>
+        private void LoadProfileImage()
+        {
+            if (_profile?.Id > 0)
+            {
+                _currentImage = ImageService.LoadImage(_profile.Id);
+                if (_currentImage != null && ProfileImage != null)
+                {
+                    ProfileImage.Source = _currentImage;
+                }
+                else
+                {
+                    //何も設定されていないとクリックが反応しないので、デフォルトの画像を設定
+                    SetDefaultImage();
+                }
+            }
+        }
+
+        /// <summary>
+        /// デフォルトの白いビットマップを設定
+        /// </summary>
+        private void SetDefaultImage()
+        {
+            // 150x150の白いビットマップを作成
+            var bitmap = new WriteableBitmap(150, 150, 96, 96, PixelFormats.Bgr32, null);
+
+            // 白色で塗りつぶし
+            var whiteColor = Colors.Black;
+            var colorBytes = new byte[] { whiteColor.B, whiteColor.G, whiteColor.R, whiteColor.A };
+            var stride = bitmap.PixelWidth * (bitmap.Format.BitsPerPixel / 8);
+            var pixelData = new byte[bitmap.PixelHeight * stride];
+
+            for (int i = 0; i < pixelData.Length; i += 4)
+            {
+                Array.Copy(colorBytes, 0, pixelData, i, 4);
+            }
+
+            bitmap.WritePixels(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight),
+                                pixelData, stride, 0);
+
+            ProfileImage.Source = bitmap;
+            _currentImage = bitmap;
+        }
+
+        /// <summary>
+        /// プロファイル画像クリック時の処理
+        /// </summary>
+        private void ProfileImage_Click(object sender, MouseButtonEventArgs e)
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                Title = "画像を選択",
+                Filter = "画像ファイル|*.jpg;*.jpeg;*.png;*.bmp;*.gif|すべてのファイル|*.*",
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var cropWindow = new ImageCropWindow(openFileDialog.FileName)
+                    {
+                        Owner = this
+                    };
+
+                    if (cropWindow.ShowDialog() == true)
+                    {
+                        _currentImage = cropWindow.CroppedImage;
+                        if (ProfileImage != null)
+                        {
+                            ProfileImage.Source = _currentImage;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"画像の処理に失敗しました: {ex.Message}", "エラー",
+                                   MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -77,7 +163,6 @@ namespace Mantensei_Database.Windows
             Save();
         }
 
-        // ProfileEditorWindow.xaml.cs の修正版 (Save部分のみ)
         void Save()
         {
             try
@@ -87,22 +172,16 @@ namespace Mantensei_Database.Windows
                 ProfileConverter.LoadFromUI(this, profile);
 
                 // ファイルパスが未設定の場合はデフォルトパスに保存
-                if (string.IsNullOrEmpty(_currentFilePath))
-                {
-                    ProfileService.SaveToDefaultPath(profile);
-                    var profilesDir = FileSystemUtility.GetProfilesDirectory(profile);
-                    var fileName = ProfileService.GetDefaultFileName(profile);
-                    _currentFilePath = Path.Combine(profilesDir, fileName);
+                ProfileService.SaveToDefaultPath(profile);
+                var profilesDir = FileSystemUtility.GetProfilesDirectory(profile);
+                var fileName = ProfileService.GetDefaultFileName(profile);
+                var fflePath = Path.Combine(profilesDir, fileName);
 
-                    MessageBox.Show($"保存しました。\n保存場所: {_currentFilePath}",
-                                  "保存完了", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                else
-                {
-                    // 既存ファイルに上書き保存
-                    ProfileService.SaveToXml(profile, _currentFilePath);
-                    MessageBox.Show("保存しました。", "保存完了", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
+                ImageService.SaveImage(profile.Id, _currentImage);
+
+                MessageBox.Show($"保存しました。\n保存場所: {fflePath}",
+                              "保存完了", MessageBoxButton.OK, MessageBoxImage.Information);
+
 
                 Close();
                 MainWindow.Instance.CharacterListPage.LoadAll();
@@ -240,8 +319,8 @@ namespace Mantensei_Database.Bindings
             FavoriteThings = new TagInputViewModel("好き・趣味", "趣味");
             NickNames = new TagInputViewModel("あだ名", "あだ名");
             Traits = new TagInputViewModel("タグ", "タグ");
-            Dees = new TagInputViewModel("ネタ", "ネタ");            
-
+            Dees = new TagInputViewModel("ネタ", "ネタ");   
+            
             LoadSchools();
         }
 

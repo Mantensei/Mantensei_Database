@@ -34,6 +34,27 @@ namespace Mantensei_Database.Controls
         {
             ViewModel.AddItem(items);
         }
+
+        private void TextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                ViewModel?.AddCommand.Execute(null);
+                e.Handled = true;
+            }
+        }
+
+        private void TagLabel_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Middle)
+            {
+                if (sender is TextBlock textBlock && textBlock.DataContext is string tagText)
+                {
+                    ViewModel?.RemoveItem(tagText);
+                }
+                e.Handled = true;
+            }
+        }
     }
 }
 
@@ -81,12 +102,17 @@ namespace Mantensei_Database.Controls
 
         public void AddItem(IEnumerable<string> items)
         {
-            if(items == null) return;
+            if (items == null) return;
 
             foreach (var item in items)
             {
                 AddItem(item);
             }
+        }
+
+        public void RemoveItem(string item)
+        {
+            Items.Remove(item);
         }
 
         private void AddItem()
