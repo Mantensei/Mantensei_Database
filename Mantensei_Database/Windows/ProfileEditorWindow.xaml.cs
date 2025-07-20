@@ -10,6 +10,7 @@ using Microsoft.Win32;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -44,6 +45,7 @@ namespace Mantensei_Database.Windows
 
         void SetShortcuts()
         {
+            // 既存のComboBoxのショートカット処理
             foreach (var combo in this.GetComponentsInChildren<ComboBox>())
             {
                 combo.PreviewKeyDown += (s, e) =>
@@ -54,6 +56,51 @@ namespace Mantensei_Database.Windows
                         e.Handled = true;
                     }
                 };
+            }
+
+            this.KeyDown += (s, e) =>
+            {
+                if (e.Key == Key.Escape || (e.Key == Key.W && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control))
+                {
+                    Close();
+                    e.Handled = true;
+                }
+
+                else if (e.Key == Key.S && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                {
+                    Save();
+                    e.Handled = true;
+                }
+
+                else if (e.Key == Key.P && (Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                {
+                    ExportPrompt();
+                    e.Handled = true;
+                }
+            };
+        }
+
+        private void ExportPrompt()
+        {
+            try
+            {
+                // UIからデータを取得
+                var profile = new CharacterProfile();
+                ProfileConverter.LoadFromUI(this, profile);
+
+                // プロンプトテキストを生成
+                var prompt = profile.GeneratePromptText();
+
+                // クリップボードにコピー
+                Clipboard.SetText(prompt);
+
+                MessageBox.Show("プロンプトをクリップボードにコピーしました。", "プロンプト出力完了",
+                               MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"プロンプトの生成に失敗しました: {ex.Message}", "エラー",
+                               MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -128,10 +175,7 @@ namespace Mantensei_Database.Windows
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            Save();
-        }
+
 
         void Save()
         {
@@ -162,57 +206,27 @@ namespace Mantensei_Database.Windows
             }
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void GodDice_Click(object sender, RoutedEventArgs e)
         {
-            List<Date> Birthdays = new List<Date>();
+            var date = Models.GodDice.Roll();
 
-            void AddBirthdays(int year)
-            {
-                for (int month = 1; month <= 12; month++)
-                {
-                    for (int day = 1; day <= 31; day++)
-                    {
-                        var birthday = new Date(month, day);
-                        if (birthday.IsValid(year))
-                        {
-                            Birthdays.Add(birthday);
-                        }
-                    }
-                }
-            }
-
-            const int commonYear = 2001;
-            const int leapYear = 2000;
-            AddBirthdays(commonYear);
-            AddBirthdays(commonYear);
-            AddBirthdays(commonYear);
-            AddBirthdays(leapYear);
-
-            var rand = Birthdays.GetRandomElementOrDefault();
-            BirthMonth.Text = $"{rand.month}";
-            BirthDay.Text = $"{rand.day}";
+            BirthMonth.Text = date.month.ToString();
+            BirthDay.Text = date.day.ToString();
         }
 
-        struct Date
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            public int month;
-            public int day;
+            Save();
+        }
 
-            public Date(int month, int day)
-            {
-                this.month = month;
-                this.day = day;
-            }
+        private void PromptButton_Click(object sender, RoutedEventArgs e)
+        {
+            ExportPrompt();
+        }
 
-            public bool IsValid(int year = 2000)
-            {
-                return DateTime.TryParse($"{year}/{month}/{day}", out _);
-            }
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            Close();
         }
     }
 }
@@ -382,35 +396,40 @@ namespace Mantensei_Database.Bindings
 
         void NormalizeComboBox(ObservableCollection<string>[] bindings, string selected)
         {
-            if (bindings.Any(x => x.Contains(selected)))
+            // まず全てのコンボボックスの選択をクリア
+            foreach (var collection in bindings)
             {
-                foreach (var collection in bindings)
+                GetComboBox(collection).SelectedIndex = -1;
+            }
+
+            // 選択された項目を含むコンボボックスのインデックスを見つける
+            int selectedIndex = -1;
+            for (int i = 0; i < bindings.Length; i++)
+            {
+                if (bindings[i].Contains(selected))
                 {
-                    GetComboBox(collection).SelectedIndex = -1;
+                    selectedIndex = i;
+                    break;
                 }
             }
 
-            bool found = false;
+            // 各コンボボックスの有効/無効を設定
             for (int i = 0; i < bindings.Length; i++)
             {
-                ObservableCollection<string>? collection = bindings[i];
-                ComboBox combo = GetComboBox(collection);
+                var combo = GetComboBox(bindings[i]);
 
-                for (int j = 0; j < collection.Count; j++)
+                if (i > selectedIndex)
                 {
-                    string current = collection[j];
-                    combo.IsEnabled = found;
-
-                    if (!found)
-                    {
-                        combo.SelectedIndex = -1; // 初期化
-                        if (current == selected)
-                        {
-                            combo.SelectedItem = current;
-                            found = true;
-                        }
-                    }
-
+                    combo.IsEnabled = true;
+                }
+                else if (i == selectedIndex)
+                {
+                    combo.IsEnabled = false;
+                    combo.SelectedItem = selected;
+                }
+                else
+                {
+                    combo.IsEnabled = false;
                 }
             }
         }

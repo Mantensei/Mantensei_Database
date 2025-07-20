@@ -182,6 +182,158 @@ namespace Mantensei_Database.Models
             return Text;
         }
     }
+
+    public partial class CharacterProfile
+    {
+        public string GeneratePromptText() => GeneratePromptText(this);
+
+        /// <summary>
+        /// キャラクタープロファイルからプロンプトテキストを生成
+        /// </summary>
+        public static string GeneratePromptText(CharacterProfile profile)
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine("# キャラクター設定");
+            sb.AppendLine();
+
+            // 基本情報
+            sb.AppendLine("## 基本情報");
+            if (!string.IsNullOrEmpty(profile.FullName))
+                sb.AppendLine($"**名前**: {profile.FullName}");
+
+            if (!string.IsNullOrEmpty(profile.Kana))
+                sb.AppendLine($"**読み**: {profile.Kana}");
+
+            // 学籍情報
+            if (!string.IsNullOrEmpty(profile.Affiliation) || !string.IsNullOrEmpty(profile.Class) || !string.IsNullOrEmpty(profile.Club))
+            {
+                sb.AppendLine();
+                sb.AppendLine("## 学籍情報");
+
+                if (!string.IsNullOrEmpty(profile.Affiliation))
+                    sb.AppendLine($"**所属**: {profile.Affiliation}");
+
+                if (!string.IsNullOrEmpty(profile.Class))
+                    sb.AppendLine($"**クラス**: {profile.Class}");
+
+                if (!string.IsNullOrEmpty(profile.Club))
+                    sb.AppendLine($"**部活**: {profile.Club}");
+            }
+
+            // ステータス
+            var status = profile.Status;
+            if (status.Sum > 0)
+            {
+                sb.AppendLine();
+                sb.AppendLine("## ステータス");
+                sb.AppendLine($"**知力**: {status.Intelligence}/7");
+                sb.AppendLine($"**フィジカル**: {status.Physical}/7");
+                sb.AppendLine($"**メンタル**: {status.Mental}/7");
+                sb.AppendLine($"**運**: {status.Luck}/7");
+                sb.AppendLine($"**カリスマ**: {status.Charisma}/7");
+            }
+
+            // 紹介文
+            if (!string.IsNullOrEmpty(profile.Description))
+            {
+                sb.AppendLine();
+                sb.AppendLine("## 紹介文");
+                sb.AppendLine(profile.Description);
+            }
+
+            // タグ・特徴
+            if (profile.Traits.Any())
+            {
+                sb.AppendLine();
+                sb.AppendLine("## 特徴・タグ");
+                sb.AppendLine(string.Join(", ", profile.Traits));
+            }
+
+            // タグ・特徴
+            if (profile.Traits.Any())
+            {
+                sb.AppendLine();
+                sb.AppendLine("## 好き・趣味");
+                sb.AppendLine(string.Join(", ", profile.FavoriteThings));
+            }
+
+            // 口調メモ
+            if (!string.IsNullOrEmpty(profile.SpeechStyle))
+            {
+                sb.AppendLine();
+                sb.AppendLine("## 口調・話し方");
+                sb.AppendLine(profile.SpeechStyle);
+            }
+
+            // 補足
+            if (!string.IsNullOrEmpty(profile.NotesSupplement))
+            {
+                sb.AppendLine();
+                sb.AppendLine("## 補足");
+                sb.AppendLine(profile.NotesSupplement);
+            }
+
+            sb.AppendLine();
+            sb.AppendLine("---");
+            sb.AppendLine("このキャラクターになりきって会話してください。");
+
+            return sb.ToString();
+        }
+    }
+}
+
+namespace Mantensei_Database.Models
+{
+
+    public class GodDice
+    {
+        public static Date Roll()
+        {
+            List<Date> Birthdays = new List<Date>();
+
+            void AddBirthdays(int year)
+            {
+                for (int month = 1; month <= 12; month++)
+                {
+                    for (int day = 1; day <= 31; day++)
+                    {
+                        var birthday = new Date(month, day);
+                        if (birthday.IsValid(year))
+                        {
+                            Birthdays.Add(birthday);
+                        }
+                    }
+                }
+            }
+
+            const int commonYear = 2001;
+            const int leapYear = 2000;
+            AddBirthdays(commonYear);
+            AddBirthdays(commonYear);
+            AddBirthdays(commonYear);
+            AddBirthdays(leapYear);
+
+            return Birthdays.GetRandomElementOrDefault();
+        }
+
+        public struct Date
+        {
+            public int month;
+            public int day;
+
+            public Date(int month, int day)
+            {
+                this.month = month;
+                this.day = day;
+            }
+
+            public bool IsValid(int year = 2000)
+            {
+                return DateTime.TryParse($"{year}/{month}/{day}", out _);
+            }
+        }
+    }
 }
 
 namespace Mantensei_Database.Models

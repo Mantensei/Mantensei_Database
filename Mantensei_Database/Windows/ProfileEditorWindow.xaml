@@ -14,7 +14,6 @@
         Title="登録画面"
         Height="1000" Width="1000"
         Foreground="#204040"
-        Loaded="Window_Loaded"
         >
 
     <Window.Resources>
@@ -320,10 +319,10 @@
         <DockPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="10 0">
             <Border>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="プロンプト出力" Width="140" Height="40" Margin="5" DockPanel.Dock="Left"/>
+                    <Button Content="プロンプト出力" Width="140" Height="40" Margin="5" DockPanel.Dock="Left" Click="PromptButton_Click"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" DockPanel.Dock="Right">
-                        <Button Content="保存" Width="100" Height="40" Margin="5" Click="Button_Click"/>
-                        <Button Content="キャンセル" Width="100" Height="40" Margin="5"/>
+                        <Button Content="保存" Width="100" Height="40" Margin="5" Click="SaveButton_Click"/>
+                        <Button Content="キャンセル" Width="100" Height="40" Margin="5" Click="CancelButton_Click"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
