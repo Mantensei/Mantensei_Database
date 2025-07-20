@@ -246,6 +246,71 @@ namespace Mantensei_Database.Services
             return File.Exists(GetImagePath(profileId));
         }
 
+
+        public static WriteableBitmap GetDefaultImage()
+        {
+            var bitmap = new WriteableBitmap(1, 1, 1, 1, PixelFormats.Bgr32, null);
+            var identifierColor = Colors.Black;
+            var colorBytes = new byte[] { identifierColor.B, identifierColor.G, identifierColor.R, identifierColor.A };
+
+            bitmap.WritePixels(new Int32Rect(0, 0, 1, 1), colorBytes, 4, 0);
+            return bitmap;
+        }
+
+        public static bool IsDefaultImage(WriteableBitmap bitmap)
+        {
+            if (bitmap?.PixelWidth != 1 || bitmap.PixelHeight != 1) return false;
+
+            // 比較用のデフォルト画像を作成
+            var defaultBitmap = GetDefaultImage();
+
+            // 両方のピクセル値を取得して比較
+            var targetPixel = new byte[4];
+            var defaultPixel = new byte[4];
+
+            bitmap.CopyPixels(targetPixel, 4, 0);
+            defaultBitmap.CopyPixels(defaultPixel, 4, 0);
+
+            return BitConverter.ToInt32(targetPixel, 0) == BitConverter.ToInt32(defaultPixel, 0);
+        }
+
+        public static BitmapImage ConvertToBitmapImage(ImageSource imageSource)
+        {
+            if (imageSource is BitmapImage bitmapImage)
+            {
+                return bitmapImage;
+            }
+
+            if (imageSource is BitmapSource bitmapSource)
+            {
+                // BitmapSourceをBitmapImageに変換
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
+
+                using (var stream = new MemoryStream())
+                {
+                    encoder.Save(stream);
+                    stream.Position = 0;
+
+                    var newBitmapImage = new BitmapImage();
+                    newBitmapImage.BeginInit();
+                    newBitmapImage.StreamSource = stream;
+                    newBitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    newBitmapImage.EndInit();
+                    newBitmapImage.Freeze();
+
+                    return newBitmapImage;
+                }
+            }
+
+            return null;
+        }
+
+        public static void SaveImage(int profileId, ImageSource imageSource)
+        {
+            SaveImage(profileId, ConvertToBitmapImage(imageSource));
+        }
+
         /// <summary>
         /// 画像をプロファイルIDで保存
         /// </summary>

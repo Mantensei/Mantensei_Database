@@ -1,36 +1,21 @@
-﻿using Mantensei_Database;
-using Mantensei_Database.Bindings;
+﻿using Mantensei_Database.Bindings;
 using Mantensei_Database.Common;
 using Mantensei_Database.Controls;
 using Mantensei_Database.Models;
 using Mantensei_Database.Services;
-using Mantensei_Database.ViewModels;
 using Mantensei_Database.Windows;
 using MantenseiLib;
 using MantenseiLib.WPF;
 using Microsoft.Win32;
-using Microsoft.Windows.Themes;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using static System.Net.Mime.MediaTypeNames;
 using Path = System.IO.Path;
-using Image = System.Windows.Controls.Image;
 
 namespace Mantensei_Database.Windows
 {
@@ -40,7 +25,6 @@ namespace Mantensei_Database.Windows
     public partial class ProfileEditorWindow : Window
     {
         private CharacterProfile _profile;
-        private BitmapSource _currentImage = null;
 
         public ProfileEditorWindow() : this(default) { }
 
@@ -51,7 +35,26 @@ namespace Mantensei_Database.Windows
             DataContext = new PEW_Model(this);
             _profile = profile;
 
-            Loaded += (s, e) => InitializeProfile();
+            Loaded += (s, e) =>
+            { 
+                InitializeProfile();
+                SetShortcuts();
+            };
+        }
+
+        void SetShortcuts()
+        {
+            foreach (var combo in this.GetComponentsInChildren<ComboBox>())
+            {
+                combo.PreviewKeyDown += (s, e) =>
+                {
+                    if (e.Key == Key.Delete || e.Key == Key.Back)
+                    {
+                        combo.SelectedIndex = -1;
+                        e.Handled = true;
+                    }
+                };
+            }
         }
 
         /// <summary>
@@ -80,45 +83,16 @@ namespace Mantensei_Database.Windows
         /// </summary>
         private void LoadProfileImage()
         {
-            if (_profile?.Id > 0)
+            var img = ImageService.LoadImage(_profile.Id);
+            if (img != null)
             {
-                _currentImage = ImageService.LoadImage(_profile.Id);
-                if (_currentImage != null && ProfileImage != null)
-                {
-                    ProfileImage.Source = _currentImage;
-                }
-                else
-                {
-                    //何も設定されていないとクリックが反応しないので、デフォルトの画像を設定
-                    SetDefaultImage();
-                }
+                ProfileImage.Source = img;
             }
-        }
-
-        /// <summary>
-        /// デフォルトの白いビットマップを設定
-        /// </summary>
-        private void SetDefaultImage()
-        {
-            // 150x150の白いビットマップを作成
-            var bitmap = new WriteableBitmap(150, 150, 96, 96, PixelFormats.Bgr32, null);
-
-            // 白色で塗りつぶし
-            var whiteColor = Colors.Black;
-            var colorBytes = new byte[] { whiteColor.B, whiteColor.G, whiteColor.R, whiteColor.A };
-            var stride = bitmap.PixelWidth * (bitmap.Format.BitsPerPixel / 8);
-            var pixelData = new byte[bitmap.PixelHeight * stride];
-
-            for (int i = 0; i < pixelData.Length; i += 4)
+            else
             {
-                Array.Copy(colorBytes, 0, pixelData, i, 4);
+                //何も設定されていないとクリックが反応しないので、デフォルトの画像を設定
+                ProfileImage.Source = ImageService.GetDefaultImage();
             }
-
-            bitmap.WritePixels(new Int32Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight),
-                                pixelData, stride, 0);
-
-            ProfileImage.Source = bitmap;
-            _currentImage = bitmap;
         }
 
         /// <summary>
@@ -143,11 +117,7 @@ namespace Mantensei_Database.Windows
 
                     if (cropWindow.ShowDialog() == true)
                     {
-                        _currentImage = cropWindow.CroppedImage;
-                        if (ProfileImage != null)
-                        {
-                            ProfileImage.Source = _currentImage;
-                        }
+                        ProfileImage.Source = cropWindow.CroppedImage;
                     }
                 }
                 catch (Exception ex)
@@ -177,7 +147,7 @@ namespace Mantensei_Database.Windows
                 var fileName = ProfileService.GetDefaultFileName(profile);
                 var fflePath = Path.Combine(profilesDir, fileName);
 
-                ImageService.SaveImage(profile.Id, _currentImage);
+                ImageService.SaveImage(profile.Id, ProfileImage.Source);
 
                 MessageBox.Show($"保存しました。\n保存場所: {fflePath}",
                               "保存完了", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -199,7 +169,7 @@ namespace Mantensei_Database.Windows
 
         private void GodDice_Click(object sender, RoutedEventArgs e)
         {
-            List<Day> Birthdays = new List<Day>();
+            List<Date> Birthdays = new List<Date>();
 
             void AddBirthdays(int year)
             {
@@ -207,7 +177,7 @@ namespace Mantensei_Database.Windows
                 {
                     for (int day = 1; day <= 31; day++)
                     {
-                        var birthday = new Day(month, day);
+                        var birthday = new Date(month, day);
                         if (birthday.IsValid(year))
                         {
                             Birthdays.Add(birthday);
@@ -217,31 +187,31 @@ namespace Mantensei_Database.Windows
             }
 
             const int commonYear = 2001;
-            const int lerpYear = 2000;
+            const int leapYear = 2000;
             AddBirthdays(commonYear);
             AddBirthdays(commonYear);
             AddBirthdays(commonYear);
-            AddBirthdays(lerpYear);
+            AddBirthdays(leapYear);
 
             var rand = Birthdays.GetRandomElementOrDefault();
-            BirthMonth.Text = $"{rand.birthMonth}";
-            BirthDay.Text = $"{rand.birthDay}";
+            BirthMonth.Text = $"{rand.month}";
+            BirthDay.Text = $"{rand.day}";
         }
 
-        struct Day
+        struct Date
         {
-            public int birthMonth;
-            public int birthDay;
+            public int month;
+            public int day;
 
-            public Day(int month, int day)
+            public Date(int month, int day)
             {
-                birthMonth = month;
-                birthDay = day;
+                this.month = month;
+                this.day = day;
             }
 
             public bool IsValid(int year = 2000)
             {
-                return DateTime.TryParse($"{year}/{birthMonth}/{birthDay}", out _);
+                return DateTime.TryParse($"{year}/{month}/{day}", out _);
             }
         }
     }
@@ -319,8 +289,8 @@ namespace Mantensei_Database.Bindings
             FavoriteThings = new TagInputViewModel("好き・趣味", "趣味");
             NickNames = new TagInputViewModel("あだ名", "あだ名");
             Traits = new TagInputViewModel("タグ", "タグ");
-            Dees = new TagInputViewModel("ネタ", "ネタ");   
-            
+            Dees = new TagInputViewModel("ネタ", "ネタ");  
+
             LoadSchools();
         }
 
@@ -358,6 +328,26 @@ namespace Mantensei_Database.Bindings
 
         private void UpdateSchoolRelatedData()
         {
+            if(SelectedSchool == null)
+            {
+                foreach(var combo in _window.SchoolInfo.GetComponentsInChildren<ComboBox>())
+                {
+                    combo.SelectedIndex = -1;
+                    combo.IsEnabled = false;
+                }
+
+                _window.CurrentSchool.IsEnabled = true;
+
+                return;
+            }
+            else
+            {
+                foreach(var combo in _window.SchoolInfo.GetComponentsInChildren<ComboBox>())
+                {
+                    combo.IsEnabled = true;
+                }
+            }
+
             // クラス情報を更新
             Classes.Clear();
             foreach(var collection in ClassCollections)
