@@ -98,7 +98,7 @@
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="10*"/>
+            <ColumnDefinition Width="12.5*"/>
             <ColumnDefinition Width="10*"/>
         </Grid.ColumnDefinitions>
 
@@ -158,6 +158,7 @@
                     <Border Padding="0 5">
                         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                             <TextBlock Text="所属" Width="50" TextAlignment="Center"/>
+                            <controls:IdBasedComboBox/>
                             <ComboBox Width="125" Name="CurrentSchool" Tag="所属" 
                           ItemsSource="{Binding Schools}"
                           SelectedItem="{Binding SelectedSchool}"
@@ -231,37 +232,13 @@
                     </Border>
 
                     <StackPanel Grid.Column="1" Margin="0 10 0 0">
+                        <!-- 既存のWrapPanelを以下に置き換え -->
                         <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center" ItemHeight="40" ItemWidth="auto" Margin="0 0 0 10">
-                            <Border Padding="0" BorderThickness="0.5">
-                                <StackPanel Style="{StaticResource SliderPanel}">
-                                    <TextBlock Text="フィジカル💪" Width="75" Foreground="#C02020" FontWeight="SemiBold"/>
-                                    <Slider Style="{StaticResource StatusSlider}" Tag="フィジカル"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Padding="0" BorderThickness="0.5">
-                                <StackPanel Style="{StaticResource SliderPanel}">
-                                    <TextBlock Text="知力📘" Width="75" Foreground="#202080" FontWeight="SemiBold"/>
-                                    <Slider Style="{StaticResource StatusSlider}" Tag="知力"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Padding="0" BorderThickness="0.5">
-                                <StackPanel Style="{StaticResource SliderPanel}">
-                                    <TextBlock Text="メンタル💖" Width="75" Foreground="#f080f0" FontWeight="SemiBold"/>
-                                    <Slider Style="{StaticResource StatusSlider}" Tag="メンタル"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Padding="0" BorderThickness="0.5">
-                                <StackPanel Style="{StaticResource SliderPanel}">
-                                    <TextBlock Text="カリスマ🌟" Width="75" Foreground="#E0A000" FontWeight="SemiBold"/>
-                                    <Slider Style="{StaticResource StatusSlider}" Tag="カリスマ"/>
-                                </StackPanel>
-                            </Border>
-                            <Border Padding="0" BorderThickness="0.5">
-                                <StackPanel Style="{StaticResource SliderPanel}">
-                                    <TextBlock Text="運🍀" Width="75" Foreground="#208020" FontWeight="SemiBold"/>
-                                    <Slider Style="{StaticResource StatusSlider}" Tag="運"/>
-                                </StackPanel>
-                            </Border>
+                            <controls:StatusSlider DataContext="{Binding PhysicalSlider}"/>
+                            <controls:StatusSlider DataContext="{Binding IntelligenceSlider}"/>
+                            <controls:StatusSlider DataContext="{Binding MentalSlider}"/>
+                            <controls:StatusSlider DataContext="{Binding CharismaSlider}"/>
+                            <controls:StatusSlider DataContext="{Binding LuckSlider}"/>
                         </WrapPanel>
                     </StackPanel>
                 </Grid>
@@ -280,7 +257,7 @@
                     <!-- 紹介文 -->
                     <StackPanel Margin="0 5">
                         <TextBlock Text="紹介文" Style="{StaticResource HeaderLabel}" />
-                        <TextBox Height="150"
+                        <TextBox Height="200"
                          TextWrapping="Wrap"
                          AcceptsReturn="True"
                          Style="{StaticResource ParagraphTextBox}"
@@ -292,7 +269,7 @@
                     <!-- 口調メモ -->
                     <StackPanel Margin="0 5">
                         <TextBlock Text="口調メモ" Style="{StaticResource HeaderLabel}" />
-                        <TextBox Height="100"
+                        <TextBox Height="150"
                          TextWrapping="Wrap"
                          AcceptsReturn="True"
                          Style="{StaticResource ParagraphTextBox}"
@@ -302,7 +279,7 @@
                     <!-- 補足 -->
                     <StackPanel Margin="0 5">
                         <TextBlock Text="補足" Style="{StaticResource HeaderLabel}" />
-                        <TextBox Height="40"
+                        <TextBox Height="80"
                          TextWrapping="Wrap"
                          AcceptsReturn="True"
                          Style="{StaticResource ParagraphTextBox}"

@@ -237,6 +237,12 @@ namespace Mantensei_Database.Bindings
     {
         ProfileEditorWindow _window;
 
+        public StatusSliderModel PhysicalSlider { get; private set; }
+        public StatusSliderModel IntelligenceSlider { get; private set; }
+        public StatusSliderModel MentalSlider { get; private set; }
+        public StatusSliderModel CharismaSlider { get; private set; }
+        public StatusSliderModel LuckSlider { get; private set; }
+
         public TagInputViewModel FavoriteThings { get; private set; }
         public TagInputViewModel NickNames { get; private set; }
         public TagInputViewModel Traits { get; private set; }
@@ -303,7 +309,13 @@ namespace Mantensei_Database.Bindings
             FavoriteThings = new TagInputViewModel("好き・趣味", "趣味");
             NickNames = new TagInputViewModel("あだ名", "あだ名");
             Traits = new TagInputViewModel("タグ", "タグ");
-            Dees = new TagInputViewModel("ネタ", "ネタ");  
+            Dees = new TagInputViewModel("ネタ", "ネタ");
+
+            PhysicalSlider = new StatusSliderModel("フィジカル💪", "#C02020", "フィジカル");
+            IntelligenceSlider = new StatusSliderModel("知力📘", "#202080", "知力");
+            MentalSlider = new StatusSliderModel("メンタル💖", "#f080f0", "メンタル");
+            CharismaSlider = new StatusSliderModel("カリスマ🌟", "#E0A000", "カリスマ");
+            LuckSlider = new StatusSliderModel("運🍀", "#208020", "運");
 
             LoadSchools();
         }
