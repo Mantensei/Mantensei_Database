@@ -228,8 +228,9 @@ namespace Mantensei_Database.Models
 
         private static object? ExtractValue(DependencyObject element) => element switch
         {
-            TextBox tb => tb.Text,
+            ComboBox cb when cb.SelectedItem is IProfile profile => profile.Id.ToString(),
             ComboBox cb => cb.Text,
+            TextBox tb => tb.Text,
             CheckBox chk => chk.IsChecked ?? false,
             Slider slider => slider.Value,
             TextBlock textBlock => textBlock.Text,
@@ -240,8 +241,17 @@ namespace Mantensei_Database.Models
         {
             switch (element)
             {
-                case TextBox tb:
-                    tb.Text = value?.ToString() ?? string.Empty;
+                case ComboBox cb when cb.ItemsSource != null && int.TryParse(value?.ToString(), out int id):
+                    // ItemsSourceからIDに一致するアイテムを検索
+                    foreach (var item in cb.ItemsSource)
+                    {
+                        if (item is IProfile profile && profile.Id == id)
+                        {
+                            cb.SelectedItem = item;
+                            return;
+                        }
+                    }
+                    cb.SelectedIndex = -1;
                     break;
                 case ComboBox cb:
                     if (value != null)
@@ -256,6 +266,9 @@ namespace Mantensei_Database.Models
                         }
                     }
                     break;
+                case TextBox tb:
+                    tb.Text = value?.ToString() ?? string.Empty;
+                    break;
                 case CheckBox chk when value is bool b:
                     chk.IsChecked = b;
                     break;
@@ -267,7 +280,6 @@ namespace Mantensei_Database.Models
                     break;
             }
         }
-
         private static DependencyObject? FindElementByKey(DependencyObject root, string key, SaveTargetScope scope)
         {
             if (root is FrameworkElement fe && (fe.Tag?.ToString() == key || fe.Name == key))

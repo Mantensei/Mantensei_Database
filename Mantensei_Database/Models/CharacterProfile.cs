@@ -211,8 +211,8 @@ namespace Mantensei_Database.Models
                 sb.AppendLine();
                 sb.AppendLine("## 学籍情報");
 
-                if (!string.IsNullOrEmpty(profile.Affiliation))
-                    sb.AppendLine($"**所属**: {profile.Affiliation}");
+                //if (!string.IsNullOrEmpty(profile.Affiliation))
+                //    sb.AppendLine($"**所属**: {profile.Affiliation}");
 
                 if (!string.IsNullOrEmpty(profile.Class))
                     sb.AppendLine($"**クラス**: {profile.Class}");
@@ -227,11 +227,11 @@ namespace Mantensei_Database.Models
             {
                 sb.AppendLine();
                 sb.AppendLine("## ステータス");
-                sb.AppendLine($"**知力**: {status.Intelligence}/7");
-                sb.AppendLine($"**フィジカル**: {status.Physical}/7");
-                sb.AppendLine($"**メンタル**: {status.Mental}/7");
-                sb.AppendLine($"**運**: {status.Luck}/7");
-                sb.AppendLine($"**カリスマ**: {status.Charisma}/7");
+                sb.AppendLine($"**知力**: {status.Intelligence}/5");
+                sb.AppendLine($"**フィジカル**: {status.Physical}/5");
+                sb.AppendLine($"**メンタル**: {status.Mental}/5");
+                sb.AppendLine($"**運**: {status.Luck}/5");
+                sb.AppendLine($"**カリスマ**: {status.Charisma}/5");
             }
 
             // 紹介文
@@ -258,6 +258,14 @@ namespace Mantensei_Database.Models
                 sb.AppendLine(string.Join(", ", profile.FavoriteThings));
             }
 
+            // あだ名
+            if (profile.Nicknames.Any())
+            {
+                sb.AppendLine();
+                sb.AppendLine("## あだ名");
+                sb.AppendLine(string.Join(", ", profile.Nicknames));
+            }
+
             // 口調メモ
             if (!string.IsNullOrEmpty(profile.SpeechStyle))
             {
@@ -276,7 +284,6 @@ namespace Mantensei_Database.Models
 
             sb.AppendLine();
             sb.AppendLine("---");
-            sb.AppendLine("このキャラクターになりきって会話してください。");
 
             return sb.ToString();
         }

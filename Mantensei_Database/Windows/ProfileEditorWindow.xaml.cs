@@ -256,22 +256,23 @@ namespace Mantensei_Database.Bindings
         public ObservableCollection<string> Grade3Classes { get; private set; } = new();
         public ObservableCollection<string> Clubs { get; private set; } = new();
 
-        public ObservableCollection<string> High { get; private set; } = new();
-        public ObservableCollection<string> Middle { get; private set; } = new();
-        public ObservableCollection<string> Elementary { get; private set; } = new();
+        public ObservableCollection<SchoolProfile> High { get; private set; } = new();
+        public ObservableCollection<SchoolProfile> Middle { get; private set; } = new();
+        public ObservableCollection<SchoolProfile> Elementary { get; private set; } = new();
+
+
+        public ObservableCollection<SchoolProfile>[] SchoolCollections => new[]
+        {
+            High,
+            Middle, 
+            Elementary,
+        };
 
         public ObservableCollection<string>[] ClassCollections => new[]
         {
             Grade3Classes,
             Grade2Classes, 
             Grade1Classes, 
-        };
-
-        public ObservableCollection<string>[] SchoolCollections => new[]
-        {
-            High,
-            Middle, 
-            Elementary,
         };
 
         private string _selectedClass;
@@ -326,20 +327,24 @@ namespace Mantensei_Database.Bindings
             {
                 var schools = ProfileDataBase.GetAllProfiles<SchoolProfile>();
                 Schools.Clear();
+                High.Clear();
+                Middle.Clear();
+                Elementary.Clear();
+
                 foreach (var school in schools)
                 {
                     Schools.Add(school);
 
-                    switch(school.SchoolType)
+                    switch (school.SchoolType)
                     {
                         case SchoolProfile.SchoolTypeHigh:
-                            High.Add(school.Name);
+                            High.Add(school); // school.Name ではなく school オブジェクトを追加
                             break;
                         case SchoolProfile.SchoolTypeMiddle:
-                            Middle.Add(school.Name);
+                            Middle.Add(school); // school.Name ではなく school オブジェクトを追加
                             break;
                         case SchoolProfile.SchoolTypeElementary:
-                            Elementary.Add(school.Name);
+                            Elementary.Add(school); // school.Name ではなく school オブジェクトを追加
                             break;
 
                         default: break;
@@ -402,11 +407,11 @@ namespace Mantensei_Database.Bindings
             }           
 
             if(SelectedSchool != null)
-                NormalizeComboBox(SchoolCollections, SelectedSchool.Name);
+                NormalizeComboBox(SchoolCollections, SelectedSchool);
 
         }
 
-        void NormalizeComboBox(ObservableCollection<string>[] bindings, string selected)
+        void NormalizeComboBox<T>(ObservableCollection<T>[] bindings, T selected)
         {
             // まず全てのコンボボックスの選択をクリア
             foreach (var collection in bindings)
@@ -446,7 +451,7 @@ namespace Mantensei_Database.Bindings
             }
         }
 
-        ComboBox GetComboBox(ObservableCollection<string> bindings)
+        ComboBox GetComboBox<T>(ObservableCollection<T> bindings)
         {
             foreach(var combo in _window.GetComponentsInChildren<ComboBox>())
             {

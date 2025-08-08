@@ -98,7 +98,7 @@
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="12.5*"/>
+            <ColumnDefinition Width="14*"/>
             <ColumnDefinition Width="10*"/>
         </Grid.ColumnDefinitions>
 
@@ -158,7 +158,6 @@
                     <Border Padding="0 5">
                         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                             <TextBlock Text="所属" Width="50" TextAlignment="Center"/>
-                            <controls:IdBasedComboBox/>
                             <ComboBox Width="125" Name="CurrentSchool" Tag="所属" 
                           ItemsSource="{Binding Schools}"
                           SelectedItem="{Binding SelectedSchool}"
@@ -171,26 +170,24 @@
                     </Border>
 
                     <Border Padding="0 5">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                                <TextBlock Text="高校" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75" Tag="高等学校" ItemsSource="{Binding High}"/>
-                                <TextBlock Text="中学校" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75" Tag="中学校" ItemsSource="{Binding Middle}"/>
-                                <TextBlock Text="小学校" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75" Tag="小学校" ItemsSource="{Binding Elementary}"/>
-                            </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <TextBlock Text="高校" Width="50" TextAlignment="Center"/>
+                            <ComboBox Width="100" Tag="高等学校" ItemsSource="{Binding High}" DisplayMemberPath="Name"/>
+                            <TextBlock Text="中学校" Width="50" TextAlignment="Center"/>
+                            <ComboBox Width="100" Tag="中学校" ItemsSource="{Binding Middle}" DisplayMemberPath="Name"/>
+                            <TextBlock Text="小学校" Width="50" TextAlignment="Center"/>
+                            <ComboBox Width="100" Tag="小学校" ItemsSource="{Binding Elementary}" DisplayMemberPath="Name"/>
                         </StackPanel>
                     </Border>
                     <Border Padding="0 5">
                         <StackPanel Orientation="Vertical">
                             <StackPanel Orientation="Horizontal" Margin="0 5">
                                 <TextBlock Text="1年" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75" ItemsSource="{Binding Grade1Classes}"/>
+                                <ComboBox Width="100" ItemsSource="{Binding Grade1Classes}"/>
                                 <TextBlock Text="2年" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75" ItemsSource="{Binding Grade2Classes}"/>
+                                <ComboBox Width="100" ItemsSource="{Binding Grade2Classes}"/>
                                 <TextBlock Text="3年" Width="50" TextAlignment="Center"/>
-                                <ComboBox Width="75" ItemsSource="{Binding Grade3Classes}"/>
+                                <ComboBox Width="100" ItemsSource="{Binding Grade3Classes}"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0 5">
                                 <TextBlock Text="部活動" Width="50" TextAlignment="Center"/>
